@@ -1,0 +1,100 @@
+<mat-card>
+    <mat-card-content>
+        <mat-card>
+            <mat-card-content>
+                <div class="contenido-editar">
+                    <mat-card-title class="titulo">CONSULTA DEL LOG 01</mat-card-title> 
+                    <button class="boton-salir" (click)="onCloseClick()">x</button>
+                </div>
+                <mat-divider class="divider"></mat-divider>
+                <mat-card-content>
+                    <mat-card>
+                        <mat-card-title class="tituloNivelDos">DETALLES DEL LOG</mat-card-title>
+                        <br>
+                        <mat-card-content>
+                            <form [formGroup]="detallesLogForm">
+                                <div class="grid">
+                                <div class="left-column">
+                                    <div class="field-container">
+                                        <p class="nombre-input">Nombre Responsable: *</p>
+                                        <input type="text" formControlName="nombreResponsable">
+                                    </div>
+                                    <div class="field-container">
+                                        <p class="nombre-input">Documento Responsable: *</p>
+                                        <input type="text" formControlName="documentoResponsable">
+                                    </div>
+                                    <div class="field-container">
+                                        <p class="nombre-input">Dirección Acción: *</p>
+                                        <input type="text" formControlName="direccionAccion">
+                                    </div>
+                                </div>
+                                <div class="right-column">
+                                    <div class="field-container">
+                                        <p class="nombre-input">Tipo de LOG: *</p>
+                                        <input type="text" formControlName="tipoLog">
+                                    </div>
+                                    <div class="field-container">
+                                        <p class="nombre-input">Fecha de Ejecución: *</p>
+                                        <input type="text" formControlName="fechaEjecucion">
+                                    </div>
+                                    <div class="field-container">
+                                        <p class="nombre-input">Rol: *</p>
+                                        <input type="text" formControlName="rol">
+                                    </div>
+                                </div>
+                                </div>
+                            </form>
+                        </mat-card-content>
+                    </mat-card>
+                    <br>
+                    <mat-card>
+                        <mat-card-title class="tituloNivelDos">DATA: (TRANSACCIÓN)</mat-card-title>
+                        <br>
+                        <mat-card-content>
+                            <form [formGroup]="dataLogForm">
+                                <div class="bordered-container">
+                                    <!--<p class="nombre-input">API'S QUE CONSUMEN:</p>
+                                    <textarea matInput formControlName="apiConsume" rows="2" cols="50"></textarea>
+                                    <p class="nombre-input">PETICIÓN REALIZADA:</p>
+                                    <textarea matInput formControlName="peticionRealizada" rows="8" cols="50"></textarea>
+                                    <p class="nombre-input">EVENTO EJECUTADO EN LA BASE DE DATOS:</p>
+                                    <textarea matInput formControlName="eventoBD" rows="10" cols="50"></textarea>-->
+                                    <!--<p class="nombre-input">API'S QUE CONSUMEN:</p>
+                                    <input type="text" formControlName="apiConsume" class="inputNivelDos">
+                                    <p class="nombre-input">PETICIÓN REALIZADA:</p>
+                                    <input type="text" formControlName="peticionRealizada" class="inputNivelTres">
+                                    <p class="nombre-input">EVENTO EJECUTADO EN LA BASE DE DATOS:</p>
+                                    <input type="text" formControlName="eventoBD" class="inputNivelTres">-->
+                                    <p class="nombre-input">API'S QUE CONSUMEN:</p>
+                                    <textarea formControlName="apiConsume" class="textarea"></textarea>
+                                    <p class="nombre-input">PETICIÓN REALIZADA:</p>
+                                    <textarea formControlName="peticionRealizada" class="textareaNivelDos"></textarea>
+                                    <p class="nombre-input">EVENTO EJECUTADO EN LA BASE DE DATOS:</p>
+                                    <textarea formControlName="eventoBD" class="textareaNivelDos"></textarea>
+                                </div>
+                            </form>
+                        </mat-card-content>
+                    </mat-card>
+                    <br>
+                    <mat-card>
+                        <mat-card-title class="tituloNivelDos">ERROR/ES</mat-card-title>
+                        <br>
+                        <mat-card-content>
+                            <form [formGroup]="errorLogForm">
+                                <div class="bordered-container">
+                                    <div class="field-container">
+                                        <p class="nombre-input">TIPO ERROR: (info)</p>
+                                        <input type="text" formControlName="tipoError">
+                                    </div>
+                                    <p class="nombre-input">MENSAJE DE ERROR:</p>
+                                    <textarea formControlName="mensajeError" class="textarea"></textarea>
+                                </div> 
+                            </form>
+                        </mat-card-content>
+                    </mat-card>
+                    <br>
+                </mat-card-content>
+            </mat-card-content>
+        </mat-card>
+    </mat-card-content>
+</mat-card>

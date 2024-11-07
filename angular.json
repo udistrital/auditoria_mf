@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "auditoriaMf": {
+    "auditoria-mf": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -11,11 +11,11 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "outputPath": "dist/auditoria-mf",
             "index": "src/index.html",
-            "main": "src/main.ts",
+            "main": "src/main.single-spa.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -25,9 +25,16 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "node_modules/@angular/material/prebuilt-themes/indigo-pink.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "customWebpackConfig": {
+              "path": "extra-webpack.config.js",
+              "libraryName": "auditoria-mf",
+              "libraryTarget": "umd"
+            },
+            "deployUrl": "http://localhost:4205/"
           },
           "configurations": {
             "production": {
@@ -43,7 +50,7 @@
                   "maximumError": "4kb"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "none"
             },
             "development": {
               "buildOptimizer": false,
@@ -51,19 +58,20 @@
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true
+              "namedChunks": true,
+              "outputHashing": "none"
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular-builders/custom-webpack:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "auditoriaMf:build:production"
+              "browserTarget": "auditoria-mf:build:production"
             },
             "development": {
-              "browserTarget": "auditoriaMf:build:development"
+              "browserTarget": "auditoria-mf:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -71,7 +79,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "auditoriaMf:build"
+            "browserTarget": "auditoria-mf:build"
           }
         },
         "test": {
