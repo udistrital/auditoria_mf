@@ -51,7 +51,9 @@ export class AuditoriaComponent implements OnInit {
   ngOnInit(): void {
     this.dataSource = new MatTableDataSource(this.logData);
     //this.dataSource.paginator = this.paginator;
+    console.log(localStorage.getItem("sharedData"))
   }
+  
 
   buscarLogs() {}
 
@@ -73,3 +75,4 @@ export class AuditoriaComponent implements OnInit {
   }
 
 }
+
