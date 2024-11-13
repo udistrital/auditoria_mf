@@ -50,6 +50,7 @@ export class AuditoriaComponent implements OnInit {
 
   ngOnInit(): void {
     this.dataSource = new MatTableDataSource(this.logData);
+    window.dispatchEvent(new CustomEvent('appMounted', { detail: { appName: '@udistrital/auditoria-mf' }}));
     //this.dataSource.paginator = this.paginator;
   }
 
@@ -73,3 +74,8 @@ export class AuditoriaComponent implements OnInit {
   }
 
 }
+
+window.addEventListener('infoRoot', evt => {
+  const customEvt = evt as CustomEvent;
+  console.log(customEvt.detail)
+})
