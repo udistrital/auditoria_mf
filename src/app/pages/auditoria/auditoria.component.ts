@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -18,7 +18,7 @@ interface LogData {
   templateUrl: './auditoria.component.html',
   styleUrls: ['./auditoria.component.css']
 })
-export class AuditoriaComponent implements OnInit {
+export class AuditoriaComponent implements OnInit, OnDestroy {
   columnasBusqueda = signal<string[]>(["IDLOG", "MODIFICACION", "FECHA", "ROL", "ACCIONES"]);
 
   days: number[] = Array.from({ length: 31 }, (_, i) => i + 1); 
@@ -51,6 +51,13 @@ export class AuditoriaComponent implements OnInit {
   ngOnInit(): void {
     this.dataSource = new MatTableDataSource(this.logData);
     //this.dataSource.paginator = this.paginator;
+    window.auditoriaNotify = (message: any) => {
+      console.log('Mensaje recibido en Auditoría:', message);
+    };
+  }
+
+  ngOnDestroy() {
+    delete window.auditoriaNotify;
   }
 
   buscarLogs() {}
