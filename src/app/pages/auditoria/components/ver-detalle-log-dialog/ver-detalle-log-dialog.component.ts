@@ -15,7 +15,29 @@ export class VerDetalleLogDialogComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dialogRef: MatDialogRef<VerDetalleLogDialogComponent>,
+    private fb: FormBuilder
   ) {
+    this.detallesLogForm = this.fb.group({
+      nombreResponsable: [this.data.NOMBRERESPONSABLE || ''],
+      documentoResponsable: [this.data.DOCUMENTORESPONSABLE || ''],
+      direccionAccion: [this.data.DIRECCIONACCION || ''],
+      tipoLog: [this.data.MODIFICACION || ''],
+      fechaEjecucion: [this.data.FECHA || ''],
+      rol: [this.data.ROL || '']
+    });
+
+    this.dataLogForm = this.fb.group({
+      apiConsume: [this.data.APISCONSUMEN || ''],
+      peticionRealizada: [this.data.PETICIONREALIZADA || ''],
+      eventoBD: [this.data.EVENTOBD || '']
+    });
+
+    this.errorLogForm = this.fb.group({
+      tipoError: [this.data.TIPOERROR || ''],
+      mensajeError: [this.data.MENSAJEERROR || '']
+    });
+
+    console.log("data que llega:", this.data);
   }
 
   onCloseClick(){
