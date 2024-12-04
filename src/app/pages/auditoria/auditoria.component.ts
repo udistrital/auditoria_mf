@@ -21,7 +21,7 @@ interface LogData {
 })
 export class AuditoriaComponent implements OnInit {
   columnasBusqueda = signal<string[]>(["IDLOG", "MODIFICACION", "FECHA", "ROL", "ACCIONES"]);
-  tiposLogs: string[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'MIDDLEWARE'];
+  tiposLogs: string[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
 
   days: number[] = Array.from({ length: 31 }, (_, i) => i + 1); 
   months: number[] = Array.from({ length: 12 }, (_, i) => i + 1); 
