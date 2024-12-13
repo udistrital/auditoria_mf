@@ -53,9 +53,24 @@
                         <option *ngFor="let tiposLog of tiposLogs" [value]="tiposLog">{{ tiposLog }}</option>
                       </select>
                       <p class="nombre-input">Nombre API</p>
-                      <select formControlName="nombreApi" id="nombreApi">
+                      <!--
+                      <select 
+                        formControlName="nombreApi" 
+                        id="nombreApi" 
+                        (change)="onNombreApiChange($event)"
+                      >
                         <option value="" disabled selected>Seleccione una API</option>
-                        <option *ngFor="let nombresApi of nombresApis" [value]="nombresApi">{{ nombresApi }}</option>
+                        <option *ngFor="let api of apisInfo" [value]="api.nombre">{{ api.nombre }}</option>
+                      </select>-->
+                      <select 
+                        formControlName="nombreApi" 
+                        id="nombreApi" 
+                        (change)="onNombreApiChange($event)"
+                      >
+                        <option value="" disabled selected>Seleccione una API</option>
+                        <option *ngFor="let api of apisInfo; let i = index" [value]="i">
+                          {{ api.nombre }}
+                        </option>
                       </select>
                     </div>
                   </div>
