@@ -7,10 +7,10 @@ import { VerDetalleLogDialogComponent } from './components/ver-detalle-log-dialo
 import { HttpClient } from '@angular/common/http';
 
 interface LogData {
-  IDLOG: string;
+  //IDLOG: string;
   MODIFICACION: string;
   FECHA: string;
-  ROL: string;
+  ROLES: string;
   ACCIONES?: string;
 }
 
@@ -25,7 +25,8 @@ interface InfoRootDetail {
   styleUrls: ['./auditoria.component.css']
 })
 export class AuditoriaComponent implements OnInit {
-  columnasBusqueda = signal<string[]>(["IDLOG", "MODIFICACION", "FECHA", "ROL", "ACCIONES"]);
+  //columnasBusqueda = signal<string[]>(["IDLOG", "MODIFICACION", "FECHA", "ROL", "ACCIONES"]);
+  columnasBusqueda = signal<string[]>(["MODIFICACION", "FECHA", "ROLES", "ACCIONES"]);
   tiposLogs: string[] = ['GET', 'POST', 'PUT', 'DELETE'];
   nombresApis: string[] = [];
   apisInfo: { nombre: string; entorno: string }[] = [];
@@ -38,8 +39,8 @@ export class AuditoriaComponent implements OnInit {
   logForm !: FormGroup;
   dataSource!: MatTableDataSource<LogData>;
   logData: LogData[] = [
-    { IDLOG: '01', MODIFICACION: 'MODIFICACIÓN', FECHA: '2018-18-04 15:16:00', ROL: 'SUPERVISOR', ACCIONES: 'Ver' },
-    { IDLOG: '02', MODIFICACION: 'CREACIÓN', FECHA: '2019-12-10 11:10:00', ROL: 'ADMIN', ACCIONES: 'Ver' },
+    { MODIFICACION: 'MODIFICACIÓN', FECHA: '2018-18-04 15:16:00', ROLES: 'SUPERVISOR', ACCIONES: 'Ver' },
+    { MODIFICACION: 'CREACIÓN', FECHA: '2019-12-10 11:10:00', ROLES: 'ADMIN', ACCIONES: 'Ver' },
   ];
 
   constructor(
@@ -54,7 +55,7 @@ export class AuditoriaComponent implements OnInit {
       horaHasta: ['', [Validators.required, this.timeValidator]],
       tipoLog: [''],
       codigoResponsable: [''],
-      rolResponsable: [''],
+      //rolResponsable: [''],
       nombreApi: ['']
     });
   }
@@ -71,7 +72,7 @@ export class AuditoriaComponent implements OnInit {
           this.fetchApiData(customEvent.detail.clienteId);
         } else {
           alert('No esta llegando el clienteId del root');
-        }        
+        }
       }
     });
 
@@ -93,7 +94,7 @@ export class AuditoriaComponent implements OnInit {
       horaFin: formValues.horaHasta,
       tipoLog: formValues.tipoLog,
       codigoResponsable: formValues.codigoResponsable,
-      rolResponsable: formValues.rolResponsable,
+      //rolResponsable: formValues.rolResponsable,
       nombreApi: this.apiSeleccionada.nombre,
       entornoApi: this.apiSeleccionada.entorno,
     };
@@ -119,11 +120,12 @@ export class AuditoriaComponent implements OnInit {
     }
 
     return response.Data.map((log: any) => ({
-      IDLOG: log.idLog || 'Sin ID',
+      /*IDLOG: log.idLog || 'Sin ID',*/
       MODIFICACION: log.tipoLog || 'Sin tipo',
       FECHA: log.fecha || 'Sin fecha',
-      ROL: log.rolResponsable || 'Sin rol',
+      ROL: log.rolResponsable || 'Sin usuario',
       ACCIONES: 'Ver',
+      ROLES: log.rol || 'Rol no encontrado',
       NOMBRERESPONSABLE: log.nombreResponsable || 'Sin nombre',
       DOCUMENTORESPONSABLE: log.documentoResponsable || 'Sin documento',
       DIRECCIONACCION: log.direccionAccion || 'Sin direccion',
@@ -165,19 +167,19 @@ export class AuditoriaComponent implements OnInit {
       }
     }*/
 
-      onNombreApiChange(event: Event): void {
-        const selectElement = event.target as HTMLSelectElement;
-        const selectedIndex = parseInt(selectElement.value, 10); 
-      
-        if (!isNaN(selectedIndex) && selectedIndex >= 0 && selectedIndex < this.apisInfo.length) {
-          const selectedApi = this.apisInfo[selectedIndex];
-          this.apiSeleccionada = { nombre: selectedApi.nombre, entorno: selectedApi.entorno };
-          console.log('API seleccionada:', this.apiSeleccionada);
-        } else {
-          this.apiSeleccionada = null;
-          console.warn('El índice seleccionado es inválido.');
-        }
-      }
+  onNombreApiChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const selectedIndex = parseInt(selectElement.value, 10);
+
+    if (!isNaN(selectedIndex) && selectedIndex >= 0 && selectedIndex < this.apisInfo.length) {
+      const selectedApi = this.apisInfo[selectedIndex];
+      this.apiSeleccionada = { nombre: selectedApi.nombre, entorno: selectedApi.entorno };
+      console.log('API seleccionada:', this.apiSeleccionada);
+    } else {
+      this.apiSeleccionada = null;
+      console.warn('El índice seleccionado es inválido.');
+    }
+  }
 
   async fetchApiData(rootClienteId: string): Promise<void> {
     const baseUrl = 'https://autenticacion.portaloas.udistrital.edu.co/apioas/roles/v1';
@@ -210,7 +212,7 @@ export class AuditoriaComponent implements OnInit {
           nombre: api.nombre.startsWith('/') ? api.nombre.slice(1) : api.nombre,
           entorno: api.entorno,
         }));
-  
+
         console.log('Información de APIs:', this.apisInfo);
       } else {
         console.error('Estructura de datos inesperada:', data);
