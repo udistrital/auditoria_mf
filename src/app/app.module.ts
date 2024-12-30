@@ -18,8 +18,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { VerDetalleLogDialogComponent } from './pages/auditoria/components/ver-detalle-log-dialog/ver-detalle-log-dialog.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+//import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core/dist/index.js';
+//import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { environment } from 'src/environments/environment';
 
+/*export function createTranslateLoader(http: HttpClient) {
+  return new TranslateHttpLoader(http, environment.apiUrl + 'assets/i18n/', '.json');
+}*/
 
 @NgModule({
   declarations: [
@@ -44,9 +50,19 @@ import { HttpClientModule } from '@angular/common/http';
     MatInputModule, 
     MatDialogModule,
     BrowserAnimationsModule,
-    HttpClientModule
+    HttpClientModule,
+    /*TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: createTranslateLoader,
+        deps: [HttpClient]
+      }
+    }),*/
   ],
-  providers: [],
+  providers: [
+    /*TranslateService,
+    TranslateStore,*/
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
