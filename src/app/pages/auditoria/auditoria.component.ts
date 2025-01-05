@@ -130,7 +130,7 @@ export class AuditoriaComponent implements OnInit {
           if (Array.isArray(logs)) {
             this.procesarResultados(logs)
               .then(() => {
-                Swal.close(); 
+                Swal.close();
                 resolve();
               })
               .catch((error) => {
@@ -147,8 +147,8 @@ export class AuditoriaComponent implements OnInit {
         error: (error) => {
           console.error('Error al enviar datos a la API:', error);
           this.popUpManager.showErrorAlert('Error al buscar datos: ' + (error.message || 'Error desconocido'));
-          Swal.close(); 
-          reject(error); 
+          Swal.close();
+          reject(error);
         },
       });
     });
@@ -163,26 +163,48 @@ export class AuditoriaComponent implements OnInit {
             this.dataSource.paginator = this.paginator;
             this.popUpManager.showSuccessAlert('Datos cargados con éxito');
             //this.mostrarTabla = true;
-            resolve(); 
-          }, 1000); 
+            resolve();
+          }, 1000);
         } else {
 
           this.popUpManager.showErrorAlert('Error al buscar dependencias: Datos no disponibles');
           this.mostrarTabla = false;
-          resolve(); 
+          resolve();
         }
       } catch (error) {
-        reject(error); 
+        reject(error);
       }
     });
   }
-  
+// FUNCIÓN FORMATEO
+  funcionFormateoLog(jsonString:string):string {
+
+    try {
+      //Transformar cadena a json
+      const jsonCompleto = JSON.parse(jsonString);
+      //Obtener el componente data
+      let cadenaData = jsonCompleto.data;
+      //Eliminar } extra
+      cadenaData = cadenaData.slice(0,-1);
+      //Transformar cadena de valor de data a json
+      const subJson = JSON.parse(cadenaData);
+      //Reasignar a componente data el json obtenido
+      jsonCompleto.data = subJson;
+      //Formatear en cadena el json elaborado
+      return JSON.stringify(jsonCompleto, null, 2);
+    } catch (error) {
+      console.error("Error procesando la cadena JSON:", error);
+      return jsonString;
+    }
+  }
+// FIN FUNCIÓN FORMATEO
   private transformarRespuesta(response: any): LogData[] {
     if (!response || !response.Data || !Array.isArray(response.Data)) {
       return [];
     }
 
     return response.Data.map((log: any) => ({
+
       /*IDLOG: log.idLog || 'Sin ID',*/
       MODIFICACION: log.tipoLog || 'Sin tipo',
       FECHA: log.fecha || 'Sin fecha',
@@ -193,7 +215,7 @@ export class AuditoriaComponent implements OnInit {
       DOCUMENTORESPONSABLE: log.documentoResponsable || 'Sin documento',
       DIRECCIONACCION: log.direccionAccion || 'Sin direccion',
       APISCONSUMEN: log.apisConsumen || 'Sin apis',
-      PETICIONREALIZADA: log.peticionRealizada || 'Sin peticion',
+      PETICIONREALIZADA: this.funcionFormateoLog(log.peticionRealizada || 'Sin peticion'),
       EVENTOBD: log.eventoBD || 'Sin evento de la BD',
       TIPOERROR: log.tipoError || 'Sin tipo de error',
       MENSAJEERROR: log.mensajeError || 'Sin mensaje de error'
