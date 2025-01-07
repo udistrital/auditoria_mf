@@ -25,62 +25,17 @@
                       <div class="fecha-rango">
                         <div class="fecha-contenedor">
                           <mat-label class="fecha-label">Desde</mat-label>
-                          <div class="date-time-container">
-                            <div class="dropdown-container">
-                              <select id="diaDesde" formControlName="diaDesde" class="dropdown">
-                                <option value="" disabled selected hidden>DD</option>
-                                <option *ngFor="let day of days" [value]="day">{{ day }}</option>
-                              </select>
-                            </div>
-
-                            <div class="dropdown-container">
-                              <select id="mesDesde" formControlName="mesDesde" class="dropdown">
-                                <option value="" disabled selected hidden>MM</option>
-                                <option *ngFor="let month of months" [value]="month">{{ month }}</option>
-                              </select>
-                            </div>
-
-                            <div class="dropdown-container">
-                              <select id="anioDesde" formControlName="anioDesde" class="dropdown">
-                                <option value="" disabled selected hidden>YYYY</option>
-                                <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-                              </select>
-                            </div>
-
-                            <div class="time-input-container">
-                              <input type="time" id="horaDesde" formControlName="horaDesde" class="time-input" />
-                            </div>
+                          <input type="date" formControlName="fechaDesde">
+                          <div class="time-input-container">
+                            <input type="time" id="horaDesde" formControlName="horaDesde" class="time-input" />
                           </div>
-
                         </div>
 
                         <div class="fecha-contenedor">
                           <mat-label class="fecha-label">Hasta</mat-label>
-                          <div class="date-time-container">
-                            <div class="dropdown-container">
-                              <select id="diaHasta" formControlName="diaHasta" class="dropdown">
-                                <option value="" disabled selected hidden>DD</option>
-                                <option *ngFor="let day of days" [value]="day">{{ day }}</option>
-                              </select>
-                            </div>
-
-                            <div class="dropdown-container">
-                              <select id="mesHasta" formControlName="mesHasta" class="dropdown">
-                                <option value="" disabled selected hidden>MM</option>
-                                <option *ngFor="let month of months" [value]="month">{{ month }}</option>
-                              </select>
-                            </div>
-
-                            <div class="dropdown-container">
-                              <select id="anioHasta" formControlName="anioHasta" class="dropdown">
-                                <option value="" disabled selected hidden>YYYY</option>
-                                <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-                              </select>
-                            </div>
-
-                            <div class="time-input-container">
-                              <input type="time" id="horaHasta" formControlName="horaHasta" class="time-input" />
-                            </div>
+                          <input type="date" formControlName="fechaHasta">
+                          <div class="time-input-container">
+                            <input type="time" id="horaHasta" formControlName="horaHasta" class="time-input" />
                           </div>
                         </div>
                       </div>
@@ -93,8 +48,8 @@
                           </span>
                         </button>
                       </p>
-                      <select formControlName="tipoLog">
-                        <option>...</option>
+                      <select formControlName="tipoLog" id="tipoLog">
+                        <option *ngFor="let tiposLog of tiposLogs" [value]="tiposLog">{{ tiposLog }}</option>
                       </select>
                     </div>
                   </div>
@@ -139,7 +94,7 @@
                   <td mat-cell *matCellDef="let element" class="contenido-celda">
                     <span>
                       <div class="boton-acciones">
-                        <mat-icon class="icono-rojo" (click)="abrirDialogVerDetalleLog()">visibility<span
+                        <mat-icon class="icono-rojo" (click)="abrirDialogVerDetalleLog(element)">visibility<span
                             class="tooltip tooltip-bottom"></span>
                         </mat-icon>
                       </div>
