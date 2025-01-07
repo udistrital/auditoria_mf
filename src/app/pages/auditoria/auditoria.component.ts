@@ -1,10 +1,16 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, Input, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { VerDetalleLogDialogComponent } from './components/ver-detalle-log-dialog/ver-detalle-log-dialog.component';
 import { HttpClient } from '@angular/common/http';
+import { PopUpManager } from '../../managers/popUpManager';
+// @ts-ignore
+import Swal from 'sweetalert2/dist/sweetalert2.js';
+import { of } from 'rxjs';
+import { catchError, tap, map } from 'rxjs/operators';
+//import { TranslateService } from '@ngx-translate/core/dist/index';
 
 interface LogData {
   //IDLOG: string;
@@ -26,6 +32,9 @@ interface InfoRootDetail {
 })
 export class AuditoriaComponent implements OnInit {
   //columnasBusqueda = signal<string[]>(["IDLOG", "MODIFICACION", "FECHA", "ROL", "ACCIONES"]);
+  @Input('normalform') normalform: any;
+  @ViewChild(MatPaginator) paginator !: MatPaginator;
+
   columnasBusqueda = signal<string[]>(["MODIFICACION", "FECHA", "ROLES", "ACCIONES"]);
   tiposLogs: string[] = ['GET', 'POST', 'PUT', 'DELETE'];
   nombresApis: string[] = [];
@@ -43,10 +52,15 @@ export class AuditoriaComponent implements OnInit {
     { MODIFICACION: 'CREACIÓN', FECHA: '2019-12-10 11:10:00', ROLES: 'ADMIN', ACCIONES: 'Ver' },
   ];
 
+  //datos = new MatTableDataSource<LogData>();
+  mostrarTabla: boolean = false;
+
   constructor(
     public dialog: MatDialog,
     private fb: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    private popUpManager: PopUpManager,
+    //private translate: TranslateService,
   ) {
     this.logForm = this.fb.group({
       fechaDesde: [''],
@@ -79,12 +93,18 @@ export class AuditoriaComponent implements OnInit {
     window.dispatchEvent(new CustomEvent('clienteAuditoria', { detail: { appName: '@udistrital/auditoria-mf' } }));
   }
 
-  buscarLogs(): void {
+  /*ngAfterViewInit(){
+    this.datos.paginator = this.paginator;
+  }*/
+
+  buscarLogs(): Promise<void> {
+    this.popUpManager.showLoaderAlert('Obteniendo datos...');
     const formValues = this.logForm.value;
 
     if (!this.apiSeleccionada) {
       console.error('No se seleccionó una API válida.');
-      return;
+      this.popUpManager.showErrorAlert('Debe seleccionar una API válida.');
+      return Promise.reject('No se seleccionó una API válida.');
     }
 
     const payload = {
@@ -101,25 +121,90 @@ export class AuditoriaComponent implements OnInit {
 
     console.log('Datos enviados a la API:', payload);
 
-    this.http.post('http://localhost:8035/v1/auditoria/buscarLog', payload)
-      .subscribe({
+    return new Promise((resolve, reject) => {
+      this.http.post('http://localhost:8035/v1/auditoria/buscarLog', payload).subscribe({
         next: (response: any) => {
           console.log('Respuesta de la API:', response);
           const logs = this.transformarRespuesta(response);
-          this.dataSource.data = logs;
+
+          if (Array.isArray(logs)) {
+            this.procesarResultados(logs)
+              .then(() => {
+                Swal.close();
+                resolve();
+              })
+              .catch((error) => {
+                console.error('Error durante el procesamiento de resultados:', error);
+                this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
+                reject('Error en el procesamiento de resultados');
+              });
+          } else {
+            console.error('La transformación no devolvió un array válido:', logs);
+            this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
+            reject('Error en la transformación de datos');
+          }
         },
         error: (error) => {
           console.error('Error al enviar datos a la API:', error);
-        }
+          this.popUpManager.showErrorAlert('Error al buscar datos: ' + (error.message || 'Error desconocido'));
+          Swal.close();
+          reject(error);
+        },
       });
+    });
   }
 
+  procesarResultados(resultados: any[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        if (resultados.length > 0) {
+          this.dataSource.data = resultados;
+          setTimeout(() => {
+            this.dataSource.paginator = this.paginator;
+            this.popUpManager.showSuccessAlert('Datos cargados con éxito');
+            //this.mostrarTabla = true;
+            resolve();
+          }, 1000);
+        } else {
+
+          this.popUpManager.showErrorAlert('Error al buscar dependencias: Datos no disponibles');
+          this.mostrarTabla = false;
+          resolve();
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+// FUNCIÓN FORMATEO
+  funcionFormateoLog(jsonString:string):string {
+
+    try {
+      //Transformar cadena a json
+      const jsonCompleto = JSON.parse(jsonString);
+      //Obtener el componente data
+      let cadenaData = jsonCompleto.data;
+      //Eliminar } extra
+      cadenaData = cadenaData.slice(0,-1);
+      //Transformar cadena de valor de data a json
+      const subJson = JSON.parse(cadenaData);
+      //Reasignar a componente data el json obtenido
+      jsonCompleto.data = subJson;
+      //Formatear en cadena el json elaborado
+      return JSON.stringify(jsonCompleto, null, 2);
+    } catch (error) {
+      console.error("Error procesando la cadena JSON:", error);
+      return jsonString;
+    }
+  }
+// FIN FUNCIÓN FORMATEO
   private transformarRespuesta(response: any): LogData[] {
     if (!response || !response.Data || !Array.isArray(response.Data)) {
       return [];
     }
 
     return response.Data.map((log: any) => ({
+
       /*IDLOG: log.idLog || 'Sin ID',*/
       MODIFICACION: log.tipoLog || 'Sin tipo',
       FECHA: log.fecha || 'Sin fecha',
@@ -130,7 +215,7 @@ export class AuditoriaComponent implements OnInit {
       DOCUMENTORESPONSABLE: log.documentoResponsable || 'Sin documento',
       DIRECCIONACCION: log.direccionAccion || 'Sin direccion',
       APISCONSUMEN: log.apisConsumen || 'Sin apis',
-      PETICIONREALIZADA: log.peticionRealizada || 'Sin peticion',
+      PETICIONREALIZADA: this.funcionFormateoLog(log.peticionRealizada || 'Sin peticion'),
       EVENTOBD: log.eventoBD || 'Sin evento de la BD',
       TIPOERROR: log.tipoError || 'Sin tipo de error',
       MENSAJEERROR: log.mensajeError || 'Sin mensaje de error'
@@ -154,18 +239,6 @@ export class AuditoriaComponent implements OnInit {
     }
     return null;
   }
-
-  /*
-    onNombreApiChange(event: Event): void {
-      const selectElement = event.target as HTMLSelectElement; 
-      const selectedValue = selectElement.value;
-    
-      if (selectedValue) {
-        console.log('API seleccionada:', selectedValue);
-      } else {
-        console.warn('El valor seleccionado es nulo o no válido.');
-      }
-    }*/
 
   onNombreApiChange(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
@@ -201,13 +274,6 @@ export class AuditoriaComponent implements OnInit {
       const data = await response.json();
 
       if (data?.cliente?.api) {
-        /*this.nombresApis = data.cliente.api.map((api: any) => {
-          if (api.nombre.startsWith('/')) {
-            return api.nombre.slice(1);
-          }
-          return api.nombre;
-        });
-        console.log(this.nombresApis)*/
         this.apisInfo = data.cliente.api.map((api: any) => ({
           nombre: api.nombre.startsWith('/') ? api.nombre.slice(1) : api.nombre,
           entorno: api.entorno,

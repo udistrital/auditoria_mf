@@ -1,0 +1,48 @@
+{
+    "EXITO": {
+        "BUSQUEDA": "Datos cargados con éxito",
+        "GENERAR_MAPEO":"Mapeo creado",
+        "EDITAR_MAPEO":"Mapeo editado"
+    },
+    "ERROR":{
+        "BUSQUEDA":{
+            "DATOS":"Error al buscar dependencias: Datos no disponibles",
+            "BUSQUEDA":"Error al buscar dependencias: "
+        },
+        "DESCONOCIDO":"Error desconocido",
+        "GENERAR_MAPEO":"Error al crear mapeo",
+        "EDITAR_MAPEO":"Error al editar mapeo"
+    },
+    "CARGA":{
+      "BUSQUEDA":"Obteniendo datos...",
+      "GENERAR_MAPEO":"Creando mapeo...",
+      "EDITAR_MAPEO":"Editando mapeo..."
+    },
+    "CONFIRMACION":{
+      "EDITAR_MAPEO":{
+        "PREGUNTA":"¿Desea editar el mapeo de la dependencia?",
+        "CONFIRMAR":"EDITAR",
+        "DENEGAR":"NO EDITAR"
+      },
+      "GENERAR_MAPEO":{
+        "PREGUNTA":"¿Desea generar el mapeo de la dependencia?",
+        "CONFIRMAR":"MAPEAR",
+        "DENEGAR":"NO MAPEAR"
+      },
+      "CANCELAR":"CANCELAR",
+      "DENEGACION":"Los cambios no fueron guardados"
+    },
+    "POP_UP":{
+      "ICONO":{
+        "ERROR":"error",
+        "INFO":"info",
+        "EXITO":"success"
+      },
+      "TITULO":{
+        "EXITO":"Operación exitosa",
+        "ERROR":"Error"
+      },
+      "CONFIRMACION":"Aceptar"
+    }
+  }
+  
