@@ -8,7 +8,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "build:single-spa:auditoria-mf": "ng build auditoria-mf --configuration production",
-    "serve:single-spa:auditoria-mf": "ng s --project auditoria-mf --disable-host-check --port 4205 --live-reload false"
+    "serve:single-spa:auditoria-mf": "ng s --project auditoria-mf --disable-host-check --port 4205 --live-reload false",
+    "build:prod": "ng build --progress --configuration=production",
+    "build:test": "ng build --progress --configuration=development",
+    "build:local": "ng build --progress --configuration=local"
   },
   "private": true,
   "dependencies": {
@@ -27,7 +30,7 @@
     "rxjs": "~7.8.0",
     "single-spa": ">=4.0.0",
     "single-spa-angular": "^9.2.0",
-    "sweetalert2": "^11.15.3",
+    "sweetalert2": "^11.6.13",
     "tslib": "^2.3.0",
     "zone.js": "~0.13.0"
   },
