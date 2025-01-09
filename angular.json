@@ -90,9 +90,12 @@
             },
             "development": {
               "browserTarget": "auditoria-mf:build:development"
+            },
+            "local": {
+              "browserTarget": "espacios-fisicos-mf:build:local"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "local"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
