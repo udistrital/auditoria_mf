@@ -80,7 +80,7 @@
               "deployUrl": "http://localhost:4205/"
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "local"
         },
         "serve": {
           "builder": "@angular-builders/custom-webpack:dev-server",
