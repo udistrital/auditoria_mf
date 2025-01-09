@@ -92,7 +92,7 @@
               "browserTarget": "auditoria-mf:build:development"
             },
             "local": {
-              "browserTarget": "espacios-fisicos-mf:build:local"
+              "browserTarget": "auditoria-mf:build:local"
             }
           },
           "defaultConfiguration": "local"
