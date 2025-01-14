@@ -4,6 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuditoriaComponent } from './pages/auditoria/auditoria.component';
+import { AuditoriaMidService } from './services/auditoria_mid.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -19,9 +20,9 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { VerDetalleLogDialogComponent } from './pages/auditoria/components/ver-detalle-log-dialog/ver-detalle-log-dialog.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 //import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core/dist/index.js';
 //import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { environment } from 'src/environments/environment';
 
 /*export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, environment.apiUrl + 'assets/i18n/', '.json');
@@ -46,22 +47,15 @@ import { environment } from 'src/environments/environment';
     MatTableModule,
     MatIconModule,
     MatNativeDateModule,
-    MatDatepickerModule, 
-    MatInputModule, 
+    MatDatepickerModule,
+    MatInputModule,
+    MatSnackBarModule,
     MatDialogModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    /*TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: createTranslateLoader,
-        deps: [HttpClient]
-      }
-    }),*/
   ],
   providers: [
-    /*TranslateService,
-    TranslateStore,*/
+    AuditoriaMidService,
   ],
   bootstrap: [AppComponent]
 })
