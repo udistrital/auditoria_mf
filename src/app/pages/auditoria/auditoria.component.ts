@@ -10,6 +10,7 @@ import { PopUpManager } from '../../managers/popUpManager';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { of } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
+import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
 
 interface LogData {
   MODIFICACION: string;
@@ -52,6 +53,7 @@ export class AuditoriaComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private popUpManager: PopUpManager,
+    private auditoriaMidService: AuditoriaMidService,
   ) {
     this.logForm = this.fb.group({
       fechaDesde: [''],
@@ -119,8 +121,9 @@ export class AuditoriaComponent implements OnInit {
     console.log('Datos enviados a la API:', payload);
 
     return new Promise((resolve, reject) => {
-      this.http.post('http://localhost:8035/v1/auditoria/buscarLog', payload).subscribe({
-        next: (response: any) => {
+      this.auditoriaMidService.post('auditoria/buscarLog', payload).subscribe({
+      //this.http.post('http://localhost:8035/v1/auditoria/buscarLog', payload).subscribe({
+      next: (response: any) => {
           console.log('Respuesta de la API:', response);
           const logs = this.transformarRespuesta(response);
 
@@ -253,7 +256,6 @@ export class AuditoriaComponent implements OnInit {
     };
 
     const url = `${baseUrl}/apis_cliente?cliente=${encodeURIComponent(rootClienteId)}`;
-
     try {
       const response = await fetch(url, { headers });
       if (!response.ok) {
