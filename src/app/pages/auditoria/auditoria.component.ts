@@ -8,11 +8,11 @@ import { HttpClient } from '@angular/common/http';
 import { PopUpManager } from '../../managers/popUpManager';
 // @ts-ignore
 import Swal from 'sweetalert2/dist/sweetalert2.js';
+import { of } from 'rxjs';
+import { catchError, tap, map } from 'rxjs/operators';
 import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
-//import { TranslateService } from '@ngx-translate/core/dist/index';
 
 interface LogData {
-  //IDLOG: string;
   MODIFICACION: string;
   FECHA: string;
   ROLES: string;
@@ -30,7 +30,6 @@ interface InfoRootDetail {
   styleUrls: ['./auditoria.component.css']
 })
 export class AuditoriaComponent implements OnInit {
-  //columnasBusqueda = signal<string[]>(["IDLOG", "MODIFICACION", "FECHA", "ROL", "ACCIONES"]);
   @Input('normalform') normalform: any;
   @ViewChild(MatPaginator) paginator !: MatPaginator;
 
@@ -46,12 +45,7 @@ export class AuditoriaComponent implements OnInit {
 
   logForm !: FormGroup;
   dataSource!: MatTableDataSource<LogData>;
-  logData: LogData[] = [
-    { MODIFICACION: 'MODIFICACIÓN', FECHA: '2018-18-04 15:16:00', ROLES: 'SUPERVISOR', ACCIONES: 'Ver' },
-    { MODIFICACION: 'CREACIÓN', FECHA: '2019-12-10 11:10:00', ROLES: 'ADMIN', ACCIONES: 'Ver' },
-  ];
 
-  //datos = new MatTableDataSource<LogData>();
   mostrarTabla: boolean = false;
 
   constructor(
@@ -60,7 +54,6 @@ export class AuditoriaComponent implements OnInit {
     private http: HttpClient,
     private popUpManager: PopUpManager,
     private auditoriaMidService: AuditoriaMidService,
-    //private translate: TranslateService,
   ) {
     this.logForm = this.fb.group({
       fechaDesde: [''],
@@ -69,13 +62,12 @@ export class AuditoriaComponent implements OnInit {
       horaHasta: ['', [Validators.required, this.timeValidator]],
       tipoLog: [''],
       codigoResponsable: [''],
-      //rolResponsable: [''],
       nombreApi: ['']
     });
   }
 
   ngOnInit(): void {
-    this.dataSource = new MatTableDataSource(this.logData);
+    this.dataSource = new MatTableDataSource();
     //this.dataSource.paginator = this.paginator;
 
     window.addEventListener('infoRoot', (event: Event) => {
@@ -93,10 +85,6 @@ export class AuditoriaComponent implements OnInit {
     window.dispatchEvent(new CustomEvent('clienteAuditoria', { detail: { appName: '@udistrital/auditoria-mf' } }));
   }
 
-  /*ngAfterViewInit(){
-    this.datos.paginator = this.paginator;
-  }*/
-
   buscarLogs(): Promise<void> {
     this.popUpManager.showLoaderAlert('Obteniendo datos...');
     const formValues = this.logForm.value;
@@ -107,17 +95,28 @@ export class AuditoriaComponent implements OnInit {
       return Promise.reject('No se seleccionó una API válida.');
     }
 
-    const payload = {
+    const payload: { [key: string]: any } = {
       fechaInicio: formValues.fechaDesde,
       horaInicio: formValues.horaDesde,
       fechaFin: formValues.fechaHasta,
       horaFin: formValues.horaHasta,
       tipoLog: formValues.tipoLog,
       codigoResponsable: formValues.codigoResponsable,
-      //rolResponsable: formValues.rolResponsable,
       nombreApi: this.apiSeleccionada.nombre,
       entornoApi: this.apiSeleccionada.entorno,
     };
+
+    const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipoLog', 'nombreApi', 'entornoApi'];
+
+    const missingFields = requiredFields.filter(field => !payload[field]);
+
+    if (missingFields.length > 0) {
+        console.error('Faltan datos obligatorios:', missingFields);
+        /*this.popUpManager.showErrorAlert(
+            `Los siguientes campos son obligatorios: ${missingFields.join(', ')}`
+        );*/
+        return Promise.reject('Datos incompletos.');
+    }
 
     console.log('Datos enviados a la API:', payload);
 
@@ -177,36 +176,28 @@ export class AuditoriaComponent implements OnInit {
       }
     });
   }
-// FUNCIÓN FORMATEO
+
   funcionFormateoLog(jsonString:string):string {
 
     try {
-      //Transformar cadena a json
       const jsonCompleto = JSON.parse(jsonString);
-      //Obtener el componente data
       let cadenaData = jsonCompleto.data;
-      //Eliminar } extra
       cadenaData = cadenaData.slice(0,-1);
-      //Transformar cadena de valor de data a json
       const subJson = JSON.parse(cadenaData);
-      //Reasignar a componente data el json obtenido
       jsonCompleto.data = subJson;
-      //Formatear en cadena el json elaborado
       return JSON.stringify(jsonCompleto, null, 2);
     } catch (error) {
       console.error("Error procesando la cadena JSON:", error);
       return jsonString;
     }
   }
-// FIN FUNCIÓN FORMATEO
+
   private transformarRespuesta(response: any): LogData[] {
     if (!response || !response.Data || !Array.isArray(response.Data)) {
       return [];
     }
 
     return response.Data.map((log: any) => ({
-
-      /*IDLOG: log.idLog || 'Sin ID',*/
       MODIFICACION: log.tipoLog || 'Sin tipo',
       FECHA: log.fecha || 'Sin fecha',
       ROL: log.rolResponsable || 'Sin usuario',
