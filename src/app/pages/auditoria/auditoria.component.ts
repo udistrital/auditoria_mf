@@ -110,9 +110,9 @@ export class AuditoriaComponent implements OnInit {
 
     if (missingFields.length > 0) {
         console.error('Faltan datos obligatorios:', missingFields);
-        this.popUpManager.showErrorAlert(
+        /*this.popUpManager.showErrorAlert(
             `Los siguientes campos son obligatorios: ${missingFields.join(', ')}`
-        );
+        );*/
         return Promise.reject('Datos incompletos.');
     }
 
