@@ -6,6 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { VerDetalleLogDialogComponent } from './components/ver-detalle-log-dialog/ver-detalle-log-dialog.component';
 import { HttpClient } from '@angular/common/http';
 import { PopUpManager } from '../../managers/popUpManager';
+import { MAPEO_APIS } from 'src/app/shared/constantes';
 // @ts-ignore
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { of } from 'rxjs';
@@ -265,10 +266,14 @@ export class AuditoriaComponent implements OnInit {
       const data = await response.json();
 
       if (data?.cliente?.api) {
-        this.apisInfo = data.cliente.api.map((api: any) => ({
-          nombre: api.nombre.startsWith('/') ? api.nombre.slice(1) : api.nombre,
-          entorno: api.entorno,
-        }));
+        this.apisInfo = data.cliente.api.map((api: any) => {
+          const nombre = api.nombre.startsWith('/') ? api.nombre.slice(1) : api.nombre;
+          api.nombre = MAPEO_APIS[nombre] || nombre;
+          return {
+            nombre: api.nombre,
+            entorno: api.entorno,
+          }
+        });
 
         console.log('Información de APIs:', this.apisInfo);
       } else {
