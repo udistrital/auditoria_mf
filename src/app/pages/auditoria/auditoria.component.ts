@@ -45,8 +45,6 @@ export class AuditoriaComponent implements OnInit {
   logForm !: FormGroup;
   dataSource!: MatTableDataSource<LogData>;
 
-  mostrarTabla: boolean = false;
-
   constructor(
     public dialog: MatDialog,
     private fb: FormBuilder,
@@ -66,11 +64,9 @@ export class AuditoriaComponent implements OnInit {
 
   ngOnInit(): void {
     this.dataSource = new MatTableDataSource();
-    //this.dataSource.paginator = this.paginator;
 
     window.addEventListener('infoRoot', (event: Event) => {
       const customEvent = event as CustomEvent<InfoRootDetail>;
-      console.log('Dato recibido desde Root:', customEvent.detail);
       if (customEvent.detail.appName === '@udistrital/auditoria-mf') {
         if (customEvent.detail.clienteId && customEvent.detail.clienteId.trim() !== '') {
           this.fetchApiData(customEvent.detail.clienteId);
@@ -84,11 +80,11 @@ export class AuditoriaComponent implements OnInit {
   }
 
   buscarLogs(): Promise<void> {
-    this.popUpManager.showLoaderAlert('Obteniendo datos...');
+    this.dataSource.data = [];
+    this.popUpManager.showLoaderAlert('Obteniendo datos, por favor espere.');
     const formValues = this.logForm.value;
 
     if (!this.apiSeleccionada) {
-      console.error('No se seleccionó una API válida.');
       this.popUpManager.showErrorAlert('Debe seleccionar una API válida.');
       return Promise.reject('No se seleccionó una API válida.');
     }
@@ -109,42 +105,38 @@ export class AuditoriaComponent implements OnInit {
     const missingFields = requiredFields.filter(field => !payload[field]);
 
     if (missingFields.length > 0) {
-        console.error('Faltan datos obligatorios:', missingFields);
-        /*this.popUpManager.showErrorAlert(
-            `Los siguientes campos son obligatorios: ${missingFields.join(', ')}`
-        );*/
-        return Promise.reject('Datos incompletos.');
+      this.popUpManager.showErrorAlert(
+        `Los siguientes campos son obligatorios: ${missingFields.join(', ')}`
+      );
+      Swal.close();
+      return Promise.reject('Datos incompletos.');
     }
-
-    console.log('Datos enviados a la API:', payload);
 
     return new Promise((resolve, reject) => {
       this.http.post('http://localhost:8035/v1/auditoria/buscarLog', payload).subscribe({
         next: (response: any) => {
-          console.log('Respuesta de la API:', response);
           const logs = this.transformarRespuesta(response);
 
           if (Array.isArray(logs)) {
             this.procesarResultados(logs)
               .then(() => {
-                Swal.close();
                 resolve();
               })
               .catch((error) => {
-                console.error('Error durante el procesamiento de resultados:', error);
                 this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
                 reject('Error en el procesamiento de resultados');
               });
           } else {
-            console.error('La transformación no devolvió un array válido:', logs);
             this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
             reject('Error en la transformación de datos');
           }
         },
         error: (error) => {
-          console.error('Error al enviar datos a la API:', error);
-          this.popUpManager.showErrorAlert('Error al buscar datos: ' + (error.message || 'Error desconocido'));
-          Swal.close();
+          if (error.status === 404) {
+            this.popUpManager.showErrorAlert('No se encontraron datos en el rango de fechas y horas especificado, asociados con el tipo de LOG.');
+          } else {
+              this.popUpManager.showErrorAlert('Se genero un error desconocido al buscar los datos.');
+          }
           reject(error);
         },
       });
@@ -156,16 +148,14 @@ export class AuditoriaComponent implements OnInit {
       try {
         if (resultados.length > 0) {
           this.dataSource.data = resultados;
-          setTimeout(() => {
-            this.dataSource.paginator = this.paginator;
-            this.popUpManager.showSuccessAlert('Datos cargados con éxito');
-            //this.mostrarTabla = true;
-            resolve();
-          }, 1000);
+          //setTimeout(() => {
+          this.dataSource.paginator = this.paginator;
+          this.popUpManager.showSuccessAlert('Datos cargados con éxito');
+          resolve();
+          //}, 1000);
         } else {
 
           this.popUpManager.showErrorAlert('Error al buscar dependencias: Datos no disponibles');
-          this.mostrarTabla = false;
           resolve();
         }
       } catch (error) {
@@ -174,17 +164,16 @@ export class AuditoriaComponent implements OnInit {
     });
   }
 
-  funcionFormateoLog(jsonString:string):string {
+  funcionFormateoLog(jsonString: string): string {
 
     try {
       const jsonCompleto = JSON.parse(jsonString);
       let cadenaData = jsonCompleto.data;
-      cadenaData = cadenaData.slice(0,-1);
+      cadenaData = cadenaData.slice(0, -1);
       const subJson = JSON.parse(cadenaData);
       jsonCompleto.data = subJson;
       return JSON.stringify(jsonCompleto, null, 2);
     } catch (error) {
-      console.error("Error procesando la cadena JSON:", error);
       return jsonString;
     }
   }
@@ -236,10 +225,8 @@ export class AuditoriaComponent implements OnInit {
     if (!isNaN(selectedIndex) && selectedIndex >= 0 && selectedIndex < this.apisInfo.length) {
       const selectedApi = this.apisInfo[selectedIndex];
       this.apiSeleccionada = { nombre: selectedApi.nombre, entorno: selectedApi.entorno };
-      console.log('API seleccionada:', this.apiSeleccionada);
     } else {
       this.apiSeleccionada = null;
-      console.warn('El índice seleccionado es inválido.');
     }
   }
 
@@ -267,15 +254,12 @@ export class AuditoriaComponent implements OnInit {
           nombre: api.nombre.startsWith('/') ? api.nombre.slice(1) : api.nombre,
           entorno: api.entorno,
         }));
-
-        console.log('Información de APIs:', this.apisInfo);
       } else {
-        console.error('Estructura de datos inesperada:', data);
       }
 
       window.dispatchEvent(new CustomEvent('apiDataFetched', { detail: data }));
     } catch (error) {
-      console.error('Error al consultar la API:', error);
+      //console.error('Error al consultar la API:', error);
     }
   }
 
