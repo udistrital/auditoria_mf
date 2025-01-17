@@ -7,17 +7,11 @@ import Swal, { SweetAlertResult } from 'sweetalert2/dist/sweetalert2';
     providedIn: 'root',
 })
 export class PopUpManager {
-    constructor(
-        //private translate: TranslateService,
-    ) { 
-        //translate.setDefaultLang('es');
-    }
+    constructor() { }
 
     showSuccessAlert(text: string) {
         Swal.fire({
             confirmButtonColor: '#8C1A18',
-            //icon: this.translate.instant('POP_UP.ICONO.EXITO'),
-            //title: this.translate.instant('POP_UP.TITULO.EXITO'),
             icon: 'success',
             title: 'Operación exitosa',
             text: text,
@@ -38,7 +32,6 @@ export class PopUpManager {
             title: text,
             allowEscapeKey: false,
             allowOutsideClick: false,
-            timer: 2000,
             didOpen: () => {
                 Swal.showLoading();
             }
