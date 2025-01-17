@@ -6,10 +6,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { VerDetalleLogDialogComponent } from './components/ver-detalle-log-dialog/ver-detalle-log-dialog.component';
 import { HttpClient } from '@angular/common/http';
 import { PopUpManager } from '../../managers/popUpManager';
+import { MAPEO_APIS } from 'src/app/shared/constantes';
 // @ts-ignore
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { of } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
+import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
 
 interface LogData {
   MODIFICACION: string;
@@ -50,6 +52,7 @@ export class AuditoriaComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private popUpManager: PopUpManager,
+    private auditoriaMidService: AuditoriaMidService,
   ) {
     this.logForm = this.fb.group({
       fechaDesde: [''],
@@ -113,8 +116,9 @@ export class AuditoriaComponent implements OnInit {
     }
 
     return new Promise((resolve, reject) => {
-      this.http.post('http://localhost:8035/v1/auditoria/buscarLog', payload).subscribe({
-        next: (response: any) => {
+      this.auditoriaMidService.post('auditoria/buscarLog', payload).subscribe({
+      next: (response: any) => {
+          console.log('Respuesta de la API:', response);
           const logs = this.transformarRespuesta(response);
 
           if (Array.isArray(logs)) {
@@ -240,7 +244,6 @@ export class AuditoriaComponent implements OnInit {
     };
 
     const url = `${baseUrl}/apis_cliente?cliente=${encodeURIComponent(rootClienteId)}`;
-
     try {
       const response = await fetch(url, { headers });
       if (!response.ok) {
@@ -250,10 +253,15 @@ export class AuditoriaComponent implements OnInit {
       const data = await response.json();
 
       if (data?.cliente?.api) {
-        this.apisInfo = data.cliente.api.map((api: any) => ({
-          nombre: api.nombre.startsWith('/') ? api.nombre.slice(1) : api.nombre,
-          entorno: api.entorno,
-        }));
+        this.apisInfo = data.cliente.api.map((api: any) => {
+          const nombre = api.nombre.startsWith('/') ? api.nombre.slice(1) : api.nombre;
+          api.nombre = MAPEO_APIS[nombre] || nombre;
+          return {
+            nombre: api.nombre,
+            entorno: api.entorno,
+          }
+        });
+        console.log('Información de APIs:', this.apisInfo);
       } else {
       }
 
