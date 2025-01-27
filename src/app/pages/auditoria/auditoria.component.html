@@ -74,7 +74,7 @@
                       </select>
                     </div>
                   </div>
-                  <button class="boton-accion" (click)="buscarLogs()">BUSCAR</button>
+                  <button class="boton-accion" (click)="buscarLogs()" [disabled]="!logForm.valid">BUSCAR</button>
                 </div>
                 <div class="right-column">
                   <p class="nombre-input">Codigo responsable
