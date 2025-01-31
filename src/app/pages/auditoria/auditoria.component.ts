@@ -55,13 +55,13 @@ export class AuditoriaComponent implements OnInit {
     private auditoriaMidService: AuditoriaMidService,
   ) {
     this.logForm = this.fb.group({
-      fechaDesde: [''],
+      fechaDesde: ['', Validators.required],
       horaDesde: ['', [Validators.required, this.timeValidator]],
-      fechaHasta: [''],
+      fechaHasta: ['', Validators.required],
       horaHasta: ['', [Validators.required, this.timeValidator]],
-      tipoLog: [''],
+      tipoLog: ['', Validators.required],
       codigoResponsable: [''],
-      nombreApi: ['']
+      nombreApi: ['', Validators.required]
     });
   }
 
