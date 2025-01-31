@@ -5,7 +5,7 @@
     display: flex;
     margin-left: 20px;
     height: 100%;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     margin-right: 16px;
     flex-grow: 1;
 }
@@ -25,7 +25,7 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
 }
 
 .boton-organigrama {
@@ -73,7 +73,7 @@
     text-align: center;
     border: 1px solid #000;
     font-weight: bold;
-    font-family: Helvetica
+    font-family: Helvetica, sans-serif;
 }
 
 
@@ -87,7 +87,7 @@
 
 .contenido-celda {
     text-align: center;
-    font-family: Helvetica
+    font-family: Helvetica, sans-serif;
 }
 
 
@@ -104,21 +104,6 @@ th.mat-sort-header-sorted {
     height: auto;
     cursor: pointer;
 }
-
-.tooltip-bottom {
-    z-index: 1000;
-}
-
-.boton-acciones {
-    position: relative;
-    display: inline-block;
-}
-
-.boton-acciones:hover .tooltip {
-    visibility: visible;
-    opacity: 1;
-}
-
 
 .tooltip-bottom {
     z-index: 1000;
@@ -161,6 +146,7 @@ th.mat-sort-header-sorted {
 .date-inputs {
     display: flex;
     align-items: center;
+    gap: 10px;
 }
 
 .date-time-container {
@@ -203,11 +189,6 @@ th.mat-sort-header-sorted {
 .fecha-label {
     margin-right: 10px;
     white-space: nowrap;
-}
-
-.date-inputs {
-    display: flex;
-    gap: 10px;
 }
 
 button:disabled {
