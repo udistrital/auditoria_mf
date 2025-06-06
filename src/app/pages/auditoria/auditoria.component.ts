@@ -10,17 +10,17 @@ import { MAPEO_APIS } from 'src/app/shared/constantes';
 // @ts-ignore
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { of } from 'rxjs';
-import { catchError, tap, map } from 'rxjs/operators';
+import { catchError, tap, map, switchMap } from 'rxjs/operators';
 import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
 
-interface LogData {
+export interface LogData {
   MODIFICACION: string;
   FECHA: string;
   ROLES: string;
   ACCIONES?: string;
 }
 
-interface InfoRootDetail {
+export interface InfoRootDetail {
   appName: string;
   clienteId?: string;
 }
@@ -82,70 +82,89 @@ export class AuditoriaComponent implements OnInit {
     window.dispatchEvent(new CustomEvent('clienteAuditoria', { detail: { appName: '@udistrital/auditoria-mf' } }));
   }
 
-  buscarLogs(): Promise<void> {
+  buscarLogs(): void {
     this.dataSource.data = [];
     this.popUpManager.showLoaderAlert('Obteniendo datos, por favor espere.');
     const formValues = this.logForm.value;
-
+  
     if (!this.apiSeleccionada) {
       this.popUpManager.showErrorAlert('Debe seleccionar una API válida.');
-      return Promise.reject('No se seleccionó una API válida.');
+      return;
     }
-
+  
     const payload: { [key: string]: any } = {
       fechaInicio: formValues.fechaDesde,
       horaInicio: formValues.horaDesde,
       fechaFin: formValues.fechaHasta,
       horaFin: formValues.horaHasta,
-      tipoLog: formValues.tipoLog,
+      tipo_log: formValues.tipoLog,
       codigoResponsable: formValues.codigoResponsable,
       nombreApi: this.apiSeleccionada.nombre,
       entornoApi: this.apiSeleccionada.entorno,
+      pagina:1,
+      limite:50
     };
-
-    const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipoLog', 'nombreApi', 'entornoApi'];
-
+  
+    const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipo_log', 'nombreApi', 'entornoApi'];
     const missingFields = requiredFields.filter(field => !payload[field]);
-
+  
     if (missingFields.length > 0) {
       this.popUpManager.showErrorAlert(
         `Los siguientes campos son obligatorios: ${missingFields.join(', ')}`
       );
       Swal.close();
-      return Promise.reject('Datos incompletos.');
+      return;
     }
 
-    return new Promise((resolve, reject) => {
-      this.auditoriaMidService.post('auditoria/buscarLog', payload).subscribe({
-      next: (response: any) => {
-          console.log('Respuesta de la API:', response);
-          const logs = this.transformarRespuesta(response);
+    /*this.auditoriaMidService.post('auditoria/buscarLog', payload).pipe(
+      switchMap((response: any) => {
+        console.log('Respuesta de la API:', response);
+        const logs = this.transformarRespuesta(response);
+  
+        if (!Array.isArray(logs)) {
+          this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
+          throw new Error('Error en la transformación de datos');
+        }
+  
+        return this.procesarResultados(logs); // debe devolver Observable o Promise
+      }),
+      tap(() => {
+        Swal.close();
+      }),
+      catchError((error) => {
+        if (error.status === 404) {
+          this.popUpManager.showErrorAlert('No se encontraron datos en el rango de fechas y horas especificado, asociados con el tipo de LOG.');
+        } else {
+          this.popUpManager.showErrorAlert('Se generó un error al buscar los datos.');
+        }
+        return []; // o puedes usar: return of(void 0) si no quieres devolver un arreglo
+      })
+    ).subscribe();*/
 
-          if (Array.isArray(logs)) {
-            this.procesarResultados(logs)
-              .then(() => {
-                resolve();
-              })
-              .catch((error) => {
-                this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
-                reject('Error en el procesamiento de resultados');
-              });
-          } else {
-            this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
-            reject('Error en la transformación de datos');
-          }
-        },
-        error: (error) => {
-          if (error.status === 404) {
-            this.popUpManager.showErrorAlert('No se encontraron datos en el rango de fechas y horas especificado, asociados con el tipo de LOG.');
-          } else {
-              this.popUpManager.showErrorAlert('Se genero un error desconocido al buscar los datos.');
-          }
-          reject(error);
-        },
-      });
+    this.auditoriaMidService.buscarLogsFiltrados(payload).subscribe({
+      next: (response) => {
+        console.log('Respuesta de la API:', response);
+        const logs = this.transformarRespuesta(response);
+  
+        if (!Array.isArray(logs)) {
+          this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
+          throw new Error('Error en la transformación de datos');
+        }
+  
+        return this.procesarResultados(logs); // debe devolver Observable o Promise
+      },
+      error:(error) => {
+        console.error('Error en la petición:', error);
+         if (error.status === 404) {
+          this.popUpManager.showErrorAlert('No se encontraron datos en el rango de fechas y horas especificado, asociados con el tipo de LOG.');
+        } else {
+          this.popUpManager.showErrorAlert('Se generó un error al buscar los datos.');
+        }
+        return [];
+      }
     });
   }
+  
 
   procesarResultados(resultados: any[]): Promise<void> {
     return new Promise((resolve, reject) => {
