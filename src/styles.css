@@ -104,6 +104,8 @@
     left: calc(100% + 5px);
     transform: translateY(-50%);
     transition: opacity 0.3s;
+    max-width: 300px;
+    height: auto;
 }
 
 .tooltip-bottom {
@@ -138,6 +140,13 @@ input[formControlName="nombre"] {
     border: 2px solid #858585;
     line-height: 5px;
     margin-left: 5px;
+}
+.boton-ayuda div{
+    width: 17px;
+    height: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 

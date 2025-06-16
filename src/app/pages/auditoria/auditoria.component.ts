@@ -102,7 +102,7 @@ export class AuditoriaComponent implements OnInit {
       nombreApi: this.apiSeleccionada.nombre,
       entornoApi: this.apiSeleccionada.entorno,
       pagina:1,
-      limite:50
+      limite:5000
     };
   
     const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipo_log', 'nombreApi', 'entornoApi'];

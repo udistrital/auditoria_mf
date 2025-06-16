@@ -16,7 +16,7 @@
                   <div class="contenedor-horizontal-campos">
                     <div class="campo descripcion-campo">
                       <p class="nombre-input">Fecha
-                        <button class="boton-ayuda">?
+                        <button class="boton-ayuda"><div>?</div>
                           <span class="tooltip tooltip-right">
                             <p>El rango de fechas para filtrar</p>
                           </span>
@@ -25,6 +25,11 @@
                       <div class="fecha-rango">
                         <div class="fecha-contenedor">
                           <mat-label class="fecha-label">Desde</mat-label>
+                          <button class="boton-ayuda"><div>?</div>
+                            <span class="tooltip tooltip-right">
+                              <p>Selecciona la fecha y hora desde la cual deseas iniciar la búsqueda de logs. Asegúrate de que esté dentro del rango disponible del sistema</p>
+                            </span>
+                          </button>
                           <input type="date" formControlName="fechaDesde">
                           <div class="time-input-container">
                             <input type="time" id="horaDesde" formControlName="horaDesde" class="time-input" />
@@ -33,6 +38,11 @@
 
                         <div class="fecha-contenedor">
                           <mat-label class="fecha-label">Hasta</mat-label>
+                          <button class="boton-ayuda"><div>?</div>
+                            <span class="tooltip tooltip-right">
+                              <p>Elige la fecha y hora hasta la cual deseas buscar los registros. Esta fecha debe ser posterior a la fecha de inicio.</p>
+                            </span>
+                          </button>
                           <input type="date" formControlName="fechaHasta">
                           <div class="time-input-container">
                             <input type="time" id="horaHasta" formControlName="horaHasta" class="time-input" />
@@ -42,9 +52,9 @@
                     </div>
                     <div class="campo descripcion-campo">
                       <p class="nombre-input">Tipo de origen
-                        <button class="boton-ayuda">?
+                        <button class="boton-ayuda"><div>?</div>
                           <span class="tooltip tooltip-right">
-                            <p>Método HTTP para filtrar</p>
+                            <p>Filtra los logs por el tipo de operación HTTP realizada, como GET, POST, PUT o DELETE. Esto te permite analizar solicitudes específicas.</p>
                           </span>
                         </button>
                       </p>
@@ -52,7 +62,15 @@
                         <option value="" disabled selected>Seleccione un método HTTP</option>
                         <option *ngFor="let tiposLog of tiposLogs" [value]="tiposLog">{{ tiposLog }}</option>
                       </select>
-                      <p class="nombre-input">Nombre API</p>
+                      <div class="d-flex align-items-center">
+                        <p class="nombre-input">Nombre API
+                          <button class="boton-ayuda"><div>?</div>
+                            <span class="tooltip tooltip-right">
+                              <p>Selecciona el nombre del servicio o API sobre el que se realizó la operación. </p>
+                            </span>
+                          </button>
+                        </p>
+                      </div>
                       <select 
                         formControlName="nombreApi" 
                         id="nombreApi" 
@@ -69,9 +87,9 @@
                 </div>
                 <div class="right-column">
                   <p class="nombre-input">Codigo responsable
-                    <button class="boton-ayuda">?
+                    <button class="boton-ayuda"><div>?</div>
                       <span class="tooltip tooltip-right">
-                        <p>Usuario sin el arroba, que aparece en el log, campo opcional</p>
+                        <p>Ingresa el código del usuario o sistema responsable de la operación registrada.<br/>Usuario sin el arroba, que aparece en el log, campo opcional</p>
                       </span>
                     </button>
                   </p>
