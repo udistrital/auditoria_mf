@@ -69,7 +69,7 @@ export class AuditoriaMidService {
 
     // Realizar la petición GET con los parámetros
     return this.http.get(`http://localhost:8035/v1/auditoria/buscarLogsFiltrados`, { params },).pipe(
-      switchMap((response: any) => {
+      /*switchMap((response: any) => {
         console.log('Respuesta de la API:', response);
         const logs = this.transformarRespuesta(response);
 
@@ -79,7 +79,7 @@ export class AuditoriaMidService {
         }
 
         return this.procesarResultados(logs);
-      }),
+      }),*/
       tap(() => {
         Swal.close();
       }),

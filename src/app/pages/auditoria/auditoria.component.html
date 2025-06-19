@@ -1,12 +1,12 @@
 <mat-card>
   <mat-card-content>
     <mat-card>
-      <mat-card-title class="titulo">LOGS SISTEMA</mat-card-title>
+      <mat-card-title class="titulo" id="driver-title">LOGS SISTEMA</mat-card-title>
       <mat-divider class="divider"></mat-divider>
       <mat-card-content>
         <mat-card>
           <div class="contenido-logs">
-            <mat-card-title class="titulo2">BUSCAR LOGS</mat-card-title>
+            <mat-card-title class="titulo2" id="driver-subtitle">BUSCAR LOGS</mat-card-title>
           </div>
           <mat-divider class="divider"></mat-divider>
           <mat-card-content>
@@ -14,68 +14,74 @@
               <div class="grid">
                 <div class="left-column">
                   <div class="contenedor-horizontal-campos">
-                    <div class="campo descripcion-campo">
+                    <div class="campo descripcion-campo" id="driver-fecha-label">
                       <p class="nombre-input">Fecha
-                        <button class="boton-ayuda"><div>?</div>
+                        <button class="boton-ayuda">
+                          <div>?</div>
                           <span class="tooltip tooltip-right">
                             <p>El rango de fechas para filtrar</p>
                           </span>
                         </button>
                       </p>
-                      <div class="fecha-rango">
-                        <div class="fecha-contenedor">
-                          <mat-label class="fecha-label">Desde</mat-label>
-                          <button class="boton-ayuda"><div>?</div>
-                            <span class="tooltip tooltip-right">
-                              <p>Selecciona la fecha y hora desde la cual deseas iniciar la búsqueda de logs. Asegúrate de que esté dentro del rango disponible del sistema</p>
-                            </span>
-                          </button>
-                          <input type="date" formControlName="fechaDesde">
-                          <div class="time-input-container">
-                            <input type="time" id="horaDesde" formControlName="horaDesde" class="time-input" />
-                          </div>
+                      <div class="fecha-rango" id="driver-fecha-desde">
+                        <div class="fecha-contenedor" id="driver-fecha-desde-input">
+                            <mat-label class="fecha-label">Desde</mat-label>
+                            <button class="boton-ayuda">
+                              <div>?</div>
+                              <span class="tooltip tooltip-right">
+                                <p>Selecciona la fecha y hora desde la cual deseas iniciar la búsqueda de logs.
+                                  Asegúrate de que esté dentro del rango disponible del sistema</p>
+                              </span>
+                            </button>
+                            <input type="date" formControlName="fechaDesde">
+                            <div class="time-input-container">
+                              <input type="time" id="horaDesde" formControlName="horaDesde" class="time-input" />
+                            </div>
                         </div>
-
-                        <div class="fecha-contenedor">
-                          <mat-label class="fecha-label">Hasta</mat-label>
-                          <button class="boton-ayuda"><div>?</div>
-                            <span class="tooltip tooltip-right">
-                              <p>Elige la fecha y hora hasta la cual deseas buscar los registros. Esta fecha debe ser posterior a la fecha de inicio.</p>
-                            </span>
-                          </button>
-                          <input type="date" formControlName="fechaHasta">
-                          <div class="time-input-container">
-                            <input type="time" id="horaHasta" formControlName="horaHasta" class="time-input" />
-                          </div>
+                      </div>
+                      <div class="fecha-rango" id=" driver-fecha-hasta">
+                        <div class="fecha-contenedor" id="driver-hora-hasta-input">
+                            <mat-label class="fecha-label">Hasta</mat-label>
+                            <button class="boton-ayuda">
+                              <div>?</div>
+                              <span class="tooltip tooltip-right">
+                                <p>Elige la fecha y hora hasta la cual deseas buscar los registros. Esta fecha debe ser
+                                  posterior a la fecha de inicio.</p>
+                              </span>
+                            </button>
+                            <input type="date" formControlName="fechaHasta">
+                            <div class="time-input-container">
+                              <input type="time" id="horaHasta" formControlName="horaHasta" class="time-input" />
+                            </div>
                         </div>
                       </div>
                     </div>
                     <div class="campo descripcion-campo">
-                      <p class="nombre-input">Tipo de origen
-                        <button class="boton-ayuda"><div>?</div>
+                      <p class="nombre-input" id="driver-tipo-log-label">Tipo de origen
+                        <button class="boton-ayuda">
+                          <div>?</div>
                           <span class="tooltip tooltip-right">
-                            <p>Filtra los logs por el tipo de operación HTTP realizada, como GET, POST, PUT o DELETE. Esto te permite analizar solicitudes específicas.</p>
+                            <p>Filtra los logs por el tipo de operación HTTP realizada, como GET, POST, PUT o DELETE.
+                              Esto te permite analizar solicitudes específicas.</p>
                           </span>
                         </button>
                       </p>
-                      <select formControlName="tipo_log" id="tipo_log">
+                      <select formControlName="tipo_log" id="tipo_log" id="driver-tipo-log-select">
                         <option value="" disabled selected>Seleccione un método HTTP</option>
                         <option *ngFor="let tiposLog of tiposLogs" [value]="tiposLog">{{ tiposLog }}</option>
                       </select>
                       <div class="d-flex align-items-center">
-                        <p class="nombre-input">Nombre API
-                          <button class="boton-ayuda"><div>?</div>
+                        <p class="nombre-input" id="driver-api-label">Nombre API
+                          <button class="boton-ayuda">
+                            <div>?</div>
                             <span class="tooltip tooltip-right">
                               <p>Selecciona el nombre del servicio o API sobre el que se realizó la operación. </p>
                             </span>
                           </button>
                         </p>
                       </div>
-                      <select 
-                        formControlName="nombreApi" 
-                        id="nombreApi" 
-                        (change)="onNombreApiChange($event)"
-                      >
+                      <select formControlName="nombreApi" id="nombreApi" id="driver-api-select"
+                        (change)="onNombreApiChange($event)">
                         <option value="" disabled selected>Seleccione una API</option>
                         <option *ngFor="let api of apisInfo; let i = index" [value]="i">
                           {{ api.nombre }}
@@ -83,39 +89,47 @@
                       </select>
                     </div>
                   </div>
-                  <button class="boton-accion" (click)="buscarLogs()" [disabled]="!logForm.valid">BUSCAR</button>
+                  <button class="boton-accion" id="driver-buscar-btn" (click)="buscarLogs()"
+                    [disabled]="!logForm.valid">BUSCAR</button>
                 </div>
                 <div class="right-column">
-                  <p class="nombre-input">Codigo responsable
-                    <button class="boton-ayuda"><div>?</div>
+                  <p class="nombre-input" id="driver-codigo-label">Codigo responsable
+                    <button class="boton-ayuda">
+                      <div>?</div>
                       <span class="tooltip tooltip-right">
-                        <p>Ingresa el código del usuario o sistema responsable de la operación registrada.<br/>Usuario sin el arroba, que aparece en el log, campo opcional</p>
+                        <p>Ingresa el código del usuario o sistema responsable de la operación registrada.<br />Usuario
+                          sin el arroba, que aparece en el log, campo opcional</p>
                       </span>
                     </button>
                   </p>
-                  <input type="text" formControlName="codigoResponsable">
+                  <input type="text" formControlName="codigoResponsable" id="driver-codigo-input">
                 </div>
               </div>
             </form>
             <br>
             <mat-divider class="divider"></mat-divider>
             <ng-container>
-              <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 tabla-log" aria-label="Tabla de auditoria" aria-describedby="descripcionTabla">
+              <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 tabla-log"
+                aria-label="Tabla de auditoria" aria-describedby="descripcionTabla" id="driver-tabla">
                 <ng-container matColumnDef="MODIFICACION">
-                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-tipo">Tipo de origen</th>
+                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-tipo" id="driver-col-tipo">Tipo
+                    de origen</th>
                   <td mat-cell *matCellDef="let element" class="contenido-celda">{{ element.MODIFICACION }}</td>
                 </ng-container>
                 <ng-container matColumnDef="FECHA">
-                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-fecha">Fecha</th>
+                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-fecha" id="driver-col-fecha">
+                    Fecha</th>
                   <td mat-cell *matCellDef="let element" class="contenido-celda">{{ element.FECHA }}</td>
                 </ng-container>
                 <ng-container matColumnDef="ROLES">
-                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-rol">Rol-responsable</th>
+                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-rol" id="driver-col-rol">
+                    Rol-responsable</th>
                   <td mat-cell *matCellDef="let element" class="contenido-celda">{{ element.ROLES }}</td>
                 </ng-container>
                 <ng-container matColumnDef="ACCIONES">
-                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-acciones">ACCIONES</th>
-                  <td mat-cell *matCellDef="let element" class="contenido-celda">
+                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-acciones"
+                    id="driver-col-acciones">ACCIONES</th>
+                  <td mat-cell *matCellDef="let element" class="contenido-celda" id="driver-btn-detalle">
                     <span>
                       <div class="boton-acciones">
                         <mat-icon class="icono-rojo" (click)="abrirDialogVerDetalleLog(element)">visibility<span
@@ -128,7 +142,7 @@
                 <tr mat-header-row class="titulo-tabla" *matHeaderRowDef="columnasBusqueda()"></tr>
                 <tr mat-row *matRowDef="let row; columns: columnasBusqueda();"></tr>
               </table>
-              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons id="driver-paginador"></mat-paginator>
             </ng-container>
           </mat-card-content>
         </mat-card>
@@ -136,3 +150,6 @@
     </mat-card>
   </mat-card-content>
 </mat-card>
+<button id="start-tour-btn" (click)="startTour()" class="tour-button">
+  <mat-icon>help_outline</mat-icon> Iniciar Tutorial
+</button>

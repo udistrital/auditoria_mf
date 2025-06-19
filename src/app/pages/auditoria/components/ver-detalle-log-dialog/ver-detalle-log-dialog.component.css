@@ -64,7 +64,7 @@
 
 .textarea {
     width: 100%; 
-    height: 70px; 
+    height: 200px; 
     font-size: 14px; 
     padding: 10px; 
     box-sizing: border-box; 
@@ -84,4 +84,67 @@
     border: 1px solid #000000; 
     resize: none; 
     overflow-y: auto; 
+}
+
+/* Estilos para el botón de iniciar tour en el detalle */
+#start-detail-tour-btn {
+  position: fixed;
+  bottom: 80px; /* Ajusta para que no se solape con el otro botón */
+  right: 20px;
+  z-index: 1000;
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+#start-detail-tour-btn:hover {
+  background-color: #303f9f;
+  transform: scale(1.1);
+}
+
+/* Ajustes para los popovers en áreas pequeñas */
+.driver-popover {
+  max-width: 300px;
+}
+
+.driver-popover-title {
+  font-size: 1.1em;
+  color: #3f51b5;
+}
+
+.driver-popover-description {
+  font-size: 0.9em;
+  color: #555;
+}
+
+/* Estilos para el botón de iniciar tour */
+.tour-button {
+  bottom: 20px;
+  right: 20px;
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.tour-button:hover {
+  background-color: #303f9f;
+  transform: scale(1.1);
 }

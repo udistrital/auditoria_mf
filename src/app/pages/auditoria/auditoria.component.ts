@@ -12,6 +12,7 @@ import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { of } from 'rxjs';
 import { catchError, tap, map, switchMap } from 'rxjs/operators';
 import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
+import { driver } from 'driver.js';
 
 export interface LogData {
   MODIFICACION: string;
@@ -151,6 +152,20 @@ export class AuditoriaComponent implements OnInit {
           this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
           throw new Error('Error en la transformación de datos');
         }
+        if (response && response.Data) {
+        // Asignar datos directamente al dataSource
+        this.dataSource = new MatTableDataSource(response.Data);
+        this.dataSource.paginator = this.paginator;
+        
+        // Configurar paginación con los metadatos
+        if (response.Pagination) {
+          this.paginator.length = response.Pagination.total;
+          this.paginator.pageSize = response.Pagination.limite;
+        }
+        
+      } else {
+        this.popUpManager.showErrorAlert('No se encontraron registros');
+      }
   
         return this.procesarResultados(logs); // debe devolver Observable o Promise
       },
@@ -290,5 +305,148 @@ export class AuditoriaComponent implements OnInit {
       //console.error('Error al consultar la API:', error);
     }
   }
+startTour() {
+    const driverObj = driver({
+      showProgress: true,
+      steps: [
+        {
+          element: '#driver-title',
+          popover: {
+            title: 'Módulo de Auditoría',
+            description: 'Bienvenido al módulo de auditoría del sistema. Aquí podrás consultar todos los registros de actividad.',
+            side: 'bottom',
+            align: 'center'
+          }
+        },
+        {
+          element: '#driver-subtitle',
+          popover: {
+            title: 'Búsqueda de Logs',
+            description: 'En esta sección puedes filtrar los registros de auditoría según diferentes criterios.',
+            side: 'bottom',
+            align: 'center'
+          }
+        },
+        {
+          element: '#driver-fecha-label',
+          popover: {
+            title: 'Rango de Fechas',
+            description: 'Selecciona el rango de fechas para filtrar los registros. Puedes especificar fecha y hora exactas.',
+            side: 'right',
+            align: 'start'
+          }
+        },
+        {
+          element: '#driver-fecha-desde-input',
+          popover: {
+            title: 'Fecha de inicio',
+            description: 'Selecciona la fecha y hora desde la cual deseas iniciar la búsqueda de logs. Asegúrate de que esté dentro del rango disponible del sistema',
+            side: 'right',
+            align: 'start'
+          }
+        },
+        {
+          element: '#driver-fecha-hasta-input',
+          popover: {
+            title: 'Fecha final',
+            description: 'Elige la fecha y hora hasta la cual deseas buscar los registros. Esta fecha debe ser posterior a la fecha de inicio.',
+            side: 'right',
+            align: 'start'
+          }
+        },
+        {
+          element: '#driver-tipo-log-label',
+          popover: {
+            title: 'Tipo de Operación',
+            description: 'Filtra por tipo de operación HTTP (GET, POST, PUT, DELETE) para encontrar registros específicos.',
+            side: 'right',
+            align: 'start'
+          }
+        },
+        {
+          element: '#driver-api-label',
+          popover: {
+            title: 'API Específica',
+            description: 'Selecciona el nombre del servicio o API sobre el que deseas ver los registros.',
+            side: 'right',
+            align: 'start'
+          }
+        },
+        {
+          element: '#driver-codigo-label',
+          popover: {
+            title: 'Código de Responsable',
+            description: 'Opcionalmente, puedes filtrar por el código del usuario que realizó la acción.',
+            side: 'left',
+            align: 'start'
+          }
+        },
+        {
+          element: '#driver-buscar-btn',
+          popover: {
+            title: 'Buscar Registros',
+            description: 'Haz clic aquí para ejecutar la búsqueda con los filtros seleccionados.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        {
+          element: '#driver-tabla',
+          popover: {
+            title: 'Resultados de Búsqueda',
+            description: 'Aquí se mostrarán los registros que coincidan con tus criterios de búsqueda.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        {
+          element: '#driver-col-tipo',
+          popover: {
+            title: 'Tipo de Operación',
+            description: 'Muestra el método HTTP utilizado en la operación registrada.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        {
+          element: '#driver-col-fecha',
+          popover: {
+            title: 'Fecha y Hora',
+            description: 'Indica cuándo se realizó la operación registrada.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        {
+          element: '#driver-col-rol',
+          popover: {
+            title: 'Rol del Usuario',
+            description: 'Muestra el rol del usuario que realizó la operación.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        {
+          element: '#driver-btn-detalle',
+          popover: {
+            title: 'Ver Detalles',
+            description: 'Haz clic en el ícono de ojo para ver todos los detalles del registro seleccionado.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        {
+          element: '#driver-paginador',
+          popover: {
+            title: 'Navegación',
+            description: 'Usa estos controles para navegar entre páginas de resultados.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ]
+    });
 
+    driverObj.drive();
+  }
 }
