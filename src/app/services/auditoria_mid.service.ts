@@ -68,7 +68,6 @@ export class AuditoriaMidService {
     console.log('Parámetros de búsqueda:', params.toString());
 
     // Realizar la petición GET con los parámetros
-    
     return this.http.get(`http://localhost:8035/v1/auditoria/buscarLogsFiltrados`, { params },).pipe(
       switchMap((response: any) => {
         console.log('Respuesta de la API:', response);
@@ -101,7 +100,7 @@ export class AuditoriaMidService {
     }
 
     return response.Data.map((log: any) => ({
-      MODIFICACION: log.tipoLog || 'Sin tipo',
+      MODIFICACION: log.tipo_Log || 'Sin tipo',
       FECHA: log.fecha || 'Sin fecha',
       ROL: log.rolResponsable || 'Sin usuario',
       ACCIONES: 'Ver',

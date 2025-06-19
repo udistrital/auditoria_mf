@@ -21,7 +21,7 @@ export class VerDetalleLogDialogComponent {
       nombreResponsable: [this.data.NOMBRERESPONSABLE || ''],
       documentoResponsable: [this.data.DOCUMENTORESPONSABLE || ''],
       direccionAccion: [this.data.DIRECCIONACCION || ''],
-      tipoLog: [this.data.MODIFICACION || ''],
+      tipo_log: [this.data.MODIFICACION || ''],
       fechaEjecucion: [this.data.FECHA || ''],
       rol: [this.data.ROL || '']
     });

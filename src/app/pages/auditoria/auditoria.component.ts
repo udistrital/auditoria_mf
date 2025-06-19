@@ -59,7 +59,7 @@ export class AuditoriaComponent implements OnInit {
       horaDesde: ['', [Validators.required, this.timeValidator]],
       fechaHasta: ['', Validators.required],
       horaHasta: ['', [Validators.required, this.timeValidator]],
-      tipoLog: ['', Validators.required],
+      tipo_log: ['', Validators.required],
       codigoResponsable: [''],
       nombreApi: ['', Validators.required]
     });
@@ -97,13 +97,14 @@ export class AuditoriaComponent implements OnInit {
       horaInicio: formValues.horaDesde,
       fechaFin: formValues.fechaHasta,
       horaFin: formValues.horaHasta,
-      tipo_log: formValues.tipoLog,
+      tipo_log: formValues.tipo_log,
       codigoResponsable: formValues.codigoResponsable,
       nombreApi: this.apiSeleccionada.nombre,
       entornoApi: this.apiSeleccionada.entorno,
       pagina:1,
       limite:5000
     };
+    console.log(payload)
   
     const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipo_log', 'nombreApi', 'entornoApi'];
     const missingFields = requiredFields.filter(field => !payload[field]);
@@ -207,7 +208,7 @@ export class AuditoriaComponent implements OnInit {
     }
 
     return response.Data.map((log: any) => ({
-      MODIFICACION: log.tipoLog || 'Sin tipo',
+      MODIFICACION: log.tipo_log || 'Sin tipo',
       FECHA: log.fecha || 'Sin fecha',
       ROL: log.rolResponsable || 'Sin usuario',
       ACCIONES: 'Ver',
