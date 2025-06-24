@@ -201,7 +201,7 @@ button:disabled {
   bottom: 20px;
   right: 20px;
   z-index: 1000;
-  background-color: #3f51b5;
+  background-color: #ba8181 ;
   color: white;
   border: none;
   border-radius: 50%;
@@ -216,7 +216,8 @@ button:disabled {
 }
 
 .tour-button:hover {
-  background-color: #303f9f;
+  background-color: #731514;
+  color: white;
   transform: scale(1.1);
 }
 
@@ -235,3 +236,5 @@ button:disabled {
   font-size: 1em;
   line-height: 1.5;
 }
+
+/* ----------------------------  */

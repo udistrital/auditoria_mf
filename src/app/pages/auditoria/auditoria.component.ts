@@ -307,6 +307,8 @@ export class AuditoriaComponent implements OnInit {
   }
 startTour() {
     const driverObj = driver({
+      //overlayColor: '#ba8181',
+      popoverClass: 'driverjs-theme',
       showProgress: true,
       steps: [
         {

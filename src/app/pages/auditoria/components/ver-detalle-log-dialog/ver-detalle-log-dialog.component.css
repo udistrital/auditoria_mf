@@ -92,7 +92,7 @@
   bottom: 80px; /* Ajusta para que no se solape con el otro botón */
   right: 20px;
   z-index: 1000;
-  background-color: #3f51b5;
+  background-color: #731514;
   color: white;
   border: none;
   border-radius: 50%;
@@ -107,7 +107,7 @@
 }
 
 #start-detail-tour-btn:hover {
-  background-color: #303f9f;
+  background-color: #731514;
   transform: scale(1.1);
 }
 
@@ -118,7 +118,7 @@
 
 .driver-popover-title {
   font-size: 1.1em;
-  color: #3f51b5;
+  color: #731514;
 }
 
 .driver-popover-description {
@@ -130,7 +130,8 @@
 .tour-button {
   bottom: 20px;
   right: 20px;
-  background-color: #3f51b5;
+  z-index: 1000;
+  background-color: #ba8181 ;
   color: white;
   border: none;
   border-radius: 50%;
@@ -145,6 +146,7 @@
 }
 
 .tour-button:hover {
-  background-color: #303f9f;
+  background-color: #731514;
+  color: white;
   transform: scale(1.1);
 }
