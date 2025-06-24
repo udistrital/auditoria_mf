@@ -88,7 +88,6 @@
 
 /* Estilos para el botón de iniciar tour en el detalle */
 #start-detail-tour-btn {
-  position: fixed;
   bottom: 80px; /* Ajusta para que no se solape con el otro botón */
   right: 20px;
   z-index: 1000;
