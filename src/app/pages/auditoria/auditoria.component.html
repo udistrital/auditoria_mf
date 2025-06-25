@@ -93,16 +93,31 @@
                     [disabled]="!logForm.valid">BUSCAR</button>
                 </div>
                 <div class="right-column">
-                  <p class="nombre-input" id="driver-codigo-label">Codigo responsable
-                    <button class="boton-ayuda">
-                      <div>?</div>
-                      <span class="tooltip tooltip-right">
-                        <p>Ingresa el código del usuario o sistema responsable de la operación registrada.<br />Usuario
-                          sin el arroba, que aparece en el log, campo opcional</p>
-                      </span>
-                    </button>
-                  </p>
-                  <input type="text" formControlName="codigoResponsable" id="driver-codigo-input">
+                  <div class="row">
+                    <div class="col-12">
+                      <p class="nombre-input" id="driver-codigo-label">Codigo responsable
+                        <button class="boton-ayuda">
+                          <div>?</div>
+                          <span class="tooltip tooltip-right">
+                            <p>Ingresa el código del usuario o sistema responsable de la operación registrada.<br />Usuario
+                              sin el arroba, que aparece en el log, campo opcional</p>
+                          </span>
+                        </button>
+                      </p>
+                      <input type="text" formControlName="codigoResponsable" id="driver-codigo-input">
+                    </div>
+                    <div class="col-12">
+                      <p class="nombre-input" id="driver-codigo-label">Palabra clave
+                        <button class="boton-ayuda">
+                          <div>?</div>
+                          <span class="tooltip tooltip-right">
+                            <p> </p>
+                          </span>
+                        </button>
+                      </p>
+                      <input type="text" formControlName="palabraClave" id="driver-codigo-input">
+                    </div>
+                  </div>
                 </div>
               </div>
             </form>
@@ -142,7 +157,7 @@
                 <tr mat-header-row class="titulo-tabla" *matHeaderRowDef="columnasBusqueda()"></tr>
                 <tr mat-row *matRowDef="let row; columns: columnasBusqueda();"></tr>
               </table>
-              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons id="driver-paginador"></mat-paginator>
+              <mat-paginator [pageSizeOptions]="[5, 10, 20, 50, 100]" showFirstLastButtons id="driver-paginador"></mat-paginator>
             </ng-container>
           </mat-card-content>
         </mat-card>

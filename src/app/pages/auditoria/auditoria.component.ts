@@ -9,7 +9,7 @@ import { PopUpManager } from '../../managers/popUpManager';
 import { MAPEO_APIS } from 'src/app/shared/constantes';
 // @ts-ignore
 import Swal from 'sweetalert2/dist/sweetalert2.js';
-import { of } from 'rxjs';
+import { from, of, throwError } from 'rxjs';
 import { catchError, tap, map, switchMap } from 'rxjs/operators';
 import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
 import { driver } from 'driver.js';
@@ -62,17 +62,18 @@ export class AuditoriaComponent implements OnInit {
       horaHasta: ['', [Validators.required, this.timeValidator]],
       tipo_log: ['', Validators.required],
       codigoResponsable: [''],
-      nombreApi: ['', Validators.required]
+      nombreApi: ['', Validators.required],
+      palabraClave: ['',]
     });
   }
 
   ngOnInit(): void {
     this.dataSource = new MatTableDataSource();
-
     window.addEventListener('infoRoot', (event: Event) => {
       const customEvent = event as CustomEvent<InfoRootDetail>;
       if (customEvent.detail.appName === '@udistrital/auditoria-mf') {
         if (customEvent.detail.clienteId && customEvent.detail.clienteId.trim() !== '') {
+          console.log('Cliente ID recibido:', customEvent.detail.clienteId);
           this.fetchApiData(customEvent.detail.clienteId);
         } else {
           alert('No esta llegando el clienteId del root');
@@ -87,12 +88,12 @@ export class AuditoriaComponent implements OnInit {
     this.dataSource.data = [];
     this.popUpManager.showLoaderAlert('Obteniendo datos, por favor espere.');
     const formValues = this.logForm.value;
-  
+
     if (!this.apiSeleccionada) {
       this.popUpManager.showErrorAlert('Debe seleccionar una API válida.');
       return;
     }
-  
+
     const payload: { [key: string]: any } = {
       fechaInicio: formValues.fechaDesde,
       horaInicio: formValues.horaDesde,
@@ -102,14 +103,14 @@ export class AuditoriaComponent implements OnInit {
       codigoResponsable: formValues.codigoResponsable,
       nombreApi: this.apiSeleccionada.nombre,
       entornoApi: this.apiSeleccionada.entorno,
-      pagina:1,
-      limite:5000
+      pagina: 1,
+      limite: 5000
     };
     console.log(payload)
-  
+
     const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipo_log', 'nombreApi', 'entornoApi'];
     const missingFields = requiredFields.filter(field => !payload[field]);
-  
+
     if (missingFields.length > 0) {
       this.popUpManager.showErrorAlert(
         `Los siguientes campos son obligatorios: ${missingFields.join(', ')}`
@@ -118,69 +119,44 @@ export class AuditoriaComponent implements OnInit {
       return;
     }
 
-    /*this.auditoriaMidService.post('auditoria/buscarLog', payload).pipe(
-      switchMap((response: any) => {
-        console.log('Respuesta de la API:', response);
-        const logs = this.transformarRespuesta(response);
-  
-        if (!Array.isArray(logs)) {
-          this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
-          throw new Error('Error en la transformación de datos');
-        }
-  
-        return this.procesarResultados(logs); // debe devolver Observable o Promise
-      }),
-      tap(() => {
-        Swal.close();
-      }),
-      catchError((error) => {
-        if (error.status === 404) {
-          this.popUpManager.showErrorAlert('No se encontraron datos en el rango de fechas y horas especificado, asociados con el tipo de LOG.');
-        } else {
-          this.popUpManager.showErrorAlert('Se generó un error al buscar los datos.');
-        }
-        return []; // o puedes usar: return of(void 0) si no quieres devolver un arreglo
-      })
-    ).subscribe();*/
+    this.auditoriaMidService.buscarLogsFiltrados(payload)
+      .subscribe({
+        next: (response: any) => {
+          console.log('Respuesta de la API:', response);
+          const logs = this.transformarRespuesta(response);
 
-    this.auditoriaMidService.buscarLogsFiltrados(payload).subscribe({
-      next: (response) => {
-        console.log('Respuesta de la API:', response);
-        const logs = this.transformarRespuesta(response);
-  
-        if (!Array.isArray(logs)) {
-          this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
-          throw new Error('Error en la transformación de datos');
+          if (!Array.isArray(logs)) {
+            this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
+            throw new Error('Error en la transformación de datos');
+          }
+          if (response && response.Data) {
+            // Asignar datos directamente al dataSource
+            this.dataSource = new MatTableDataSource(response.Data);
+            this.dataSource.paginator = this.paginator;
+
+            // Configurar paginación con los metadatos
+            if (response.Pagination) {
+              this.paginator.length = response.Pagination.total;
+              this.paginator.pageSize = 100;
+            }
+
+          } else {
+            this.popUpManager.showErrorAlert('No se encontraron registros');
+          }
+
+          return this.procesarResultados(logs); // debe devolver Observable o Promise
+        },
+        error: (error) => {
+          console.error('Error en la petición:', error);
+          if (error.status === 404) {
+            this.popUpManager.showErrorAlert('No se encontraron datos en el rango de fechas y horas especificado, asociados con el tipo de LOG.');
+          } else {
+            this.popUpManager.showErrorAlert('Se generó un error al buscar los datos.');
+          }
+          return [];
         }
-        if (response && response.Data) {
-        // Asignar datos directamente al dataSource
-        this.dataSource = new MatTableDataSource(response.Data);
-        this.dataSource.paginator = this.paginator;
-        
-        // Configurar paginación con los metadatos
-        if (response.Pagination) {
-          this.paginator.length = response.Pagination.total;
-          this.paginator.pageSize = response.Pagination.limite;
-        }
-        
-      } else {
-        this.popUpManager.showErrorAlert('No se encontraron registros');
-      }
-  
-        return this.procesarResultados(logs); // debe devolver Observable o Promise
-      },
-      error:(error) => {
-        console.error('Error en la petición:', error);
-         if (error.status === 404) {
-          this.popUpManager.showErrorAlert('No se encontraron datos en el rango de fechas y horas especificado, asociados con el tipo de LOG.');
-        } else {
-          this.popUpManager.showErrorAlert('Se generó un error al buscar los datos.');
-        }
-        return [];
-      }
-    });
+      });
   }
-  
 
   procesarResultados(resultados: any[]): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -204,7 +180,6 @@ export class AuditoriaComponent implements OnInit {
   }
 
   funcionFormateoLog(jsonString: string): string {
-
     try {
       const jsonCompleto = JSON.parse(jsonString);
       let cadenaData = jsonCompleto.data;
@@ -221,7 +196,6 @@ export class AuditoriaComponent implements OnInit {
     if (!response || !response.Data || !Array.isArray(response.Data)) {
       return [];
     }
-
     return response.Data.map((log: any) => ({
       MODIFICACION: log.tipo_log || 'Sin tipo',
       FECHA: log.fecha || 'Sin fecha',
@@ -248,7 +222,6 @@ export class AuditoriaComponent implements OnInit {
     });
   }
 
-
   timeValidator(control: any): { [key: string]: boolean } | null {
     const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
     if (control.value && !timeRegex.test(control.value)) {
@@ -260,7 +233,6 @@ export class AuditoriaComponent implements OnInit {
   onNombreApiChange(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     const selectedIndex = parseInt(selectElement.value, 10);
-
     if (!isNaN(selectedIndex) && selectedIndex >= 0 && selectedIndex < this.apisInfo.length) {
       const selectedApi = this.apisInfo[selectedIndex];
       this.apiSeleccionada = { nombre: selectedApi.nombre, entorno: selectedApi.entorno };
@@ -269,43 +241,49 @@ export class AuditoriaComponent implements OnInit {
     }
   }
 
-  async fetchApiData(rootClienteId: string): Promise<void> {
+  fetchApiData(rootClienteId: string): void {
     const baseUrl = 'https://autenticacion.portaloas.udistrital.edu.co/apioas/roles/v1';
     const token = localStorage.getItem("access_token");
-
     const headers = {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     };
-
     const url = `${baseUrl}/apis_cliente?cliente=${encodeURIComponent(rootClienteId)}`;
-    try {
-      const response = await fetch(url, { headers });
-      if (!response.ok) {
-        const errorDetails = await response.text();
-        throw new Error(`Error HTTP: ${response.status}, Detalles: ${errorDetails}`);
-      }
-      const data = await response.json();
-
-      if (data?.cliente?.api) {
-        this.apisInfo = data.cliente.api.map((api: any) => {
-          const nombre = api.nombre.startsWith('/') ? api.nombre.slice(1) : api.nombre;
-          api.nombre = MAPEO_APIS[nombre] || nombre;
-          return {
-            nombre: api.nombre,
-            entorno: api.entorno,
-          }
-        });
-        console.log('Información de APIs:', this.apisInfo);
-      } else {
-      }
-
-      window.dispatchEvent(new CustomEvent('apiDataFetched', { detail: data }));
-    } catch (error) {
-      //console.error('Error al consultar la API:', error);
-    }
+    from(fetch(url, { headers })).pipe(
+      switchMap(response => {
+        if (!response.ok) {
+          return response.text().then(errorText => {
+            throw new Error(`Error HTTP: ${response.status}, Detalles: ${errorText}`);
+          });
+        }
+        return from(response.json());
+      }),
+      tap(data => console.log(data)),
+      map(data => {
+        if (data?.cliente?.api) {
+          this.apisInfo = data.cliente.api.map((api: any) => {
+            const nombre = api.nombre.startsWith('/') ? api.nombre.slice(1) : api.nombre;
+            api.nombre = MAPEO_APIS[nombre] || nombre;
+            return {
+              nombre: api.nombre,
+              entorno: api.entorno,
+            };
+          });
+          console.log('Información de APIs:', this.apisInfo);
+        }
+        return data;
+      }),
+      tap(data => {
+        window.dispatchEvent(new CustomEvent('apiDataFetched', { detail: data }));
+      }),
+      catchError(error => {
+        console.error('Error al consultar la API:', error);
+        return throwError(() => error);
+      })
+    ).subscribe();
   }
-startTour() {
+
+  startTour() {
     const driverObj = driver({
       //overlayColor: '#ba8181',
       popoverClass: 'driverjs-theme',

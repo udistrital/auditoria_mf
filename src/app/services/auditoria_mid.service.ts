@@ -49,6 +49,7 @@ export class AuditoriaMidService {
   delete(endpoint: any, element: any) {
     return this.requestManager.delete(endpoint, element.Id);
   }
+
   /**
    * # Buscar logs filtrados según el payload proporcionado.
    * Método para buscar logs filtrados según el payload proporcionado.
@@ -66,20 +67,19 @@ export class AuditoriaMidService {
       }
     });
     console.log('Parámetros de búsqueda:', params.toString());
-
     // Realizar la petición GET con los parámetros
-    return this.http.get(`http://localhost:8035/v1/auditoria/buscarLogsFiltrados`, { params },).pipe(
-      /*switchMap((response: any) => {
+    return this.http.get(`${this.path}auditoria/buscarLogsFiltrados`, { params },).pipe(
+      switchMap((response: any) => {
         console.log('Respuesta de la API:', response);
         const logs = this.transformarRespuesta(response);
 
-        if (!Array.isArray(logs)) {
+        /*if (!Array.isArray(logs)) {
           this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
           throw new Error('Error en la transformación de datos');
-        }
+        }*/
 
         return this.procesarResultados(logs);
-      }),*/
+      }),
       tap(() => {
         Swal.close();
       }),
@@ -117,7 +117,6 @@ export class AuditoriaMidService {
   }
 
   funcionFormateoLog(jsonString: string): string {
-
     try {
       const jsonCompleto = JSON.parse(jsonString);
       let cadenaData = jsonCompleto.data;
@@ -130,7 +129,6 @@ export class AuditoriaMidService {
     }
   }
 
-  
   procesarResultados(resultados: any[]): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
