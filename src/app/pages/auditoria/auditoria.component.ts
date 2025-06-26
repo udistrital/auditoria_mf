@@ -101,6 +101,7 @@ export class AuditoriaComponent implements OnInit {
       horaFin: formValues.horaHasta,
       tipo_log: formValues.tipo_log,
       codigoResponsable: formValues.codigoResponsable,
+      palabraClave: formValues.palabraClave,
       nombreApi: this.apiSeleccionada.nombre,
       entornoApi: this.apiSeleccionada.entorno,
       pagina: 1,
@@ -124,7 +125,7 @@ export class AuditoriaComponent implements OnInit {
         next: (response: any) => {
           console.log('Respuesta de la API:', response);
           const logs = this.transformarRespuesta(response);
-
+          
           if (!Array.isArray(logs)) {
             this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
             throw new Error('Error en la transformación de datos');
