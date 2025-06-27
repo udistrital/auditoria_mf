@@ -40,7 +40,7 @@
                         </div>
                       </div>
                       <div class="fecha-rango" id="driver-fecha-hasta">
-                        <div class="fecha-contenedor" id="driver-hora-hasta-input">
+                        <div class="fecha-contenedor" id="driver-fecha-hasta-input">
                             <mat-label class="fecha-label">Hasta</mat-label>
                             <button class="boton-ayuda">
                               <div>?</div>
@@ -57,40 +57,47 @@
                       </div>
                     </div>
                     <div class="campo descripcion-campo">
-                      <p class="nombre-input" id="driver-tipo-log-label">Tipo de origen
-                        <button class="boton-ayuda">
-                          <div>?</div>
-                          <span class="tooltip tooltip-right">
-                            <p>Filtra los logs por el tipo de operación HTTP realizada, como GET, POST, PUT o DELETE.
-                              Esto te permite analizar solicitudes específicas.</p>
-                          </span>
-                        </button>
-                      </p>
-                      <select formControlName="tipo_log" id="tipo_log" id="driver-tipo-log-select">
-                        <option value="" disabled selected>Seleccione un método HTTP</option>
-                        <option *ngFor="let tiposLog of tiposLogs" [value]="tiposLog">{{ tiposLog }}</option>
-                      </select>
-                      <div class="d-flex align-items-center">
-                        <p class="nombre-input" id="driver-api-label">Nombre API
+                      <div id="driver-tipo-log-label">
+                        <p class="nombre-input">Tipo de origen
                           <button class="boton-ayuda">
                             <div>?</div>
                             <span class="tooltip tooltip-right">
-                              <p>Selecciona el nombre del servicio o API sobre el que se realizó la operación. </p>
+                              <p>Filtra los logs por el tipo de operación HTTP realizada, como GET, POST, PUT o DELETE.
+                                Esto te permite analizar solicitudes específicas.</p>
                             </span>
                           </button>
                         </p>
+                        <select formControlName="tipo_log" id="tipo_log" id="driver-tipo-log-select">
+                          <option value="" disabled selected>Seleccione un método HTTP</option>
+                          <option *ngFor="let tiposLog of tiposLogs" [value]="tiposLog">{{ tiposLog }}</option>
+                        </select>
                       </div>
-                      <select formControlName="nombreApi" id="nombreApi" id="driver-api-select"
-                        (change)="onNombreApiChange($event)">
-                        <option value="" disabled selected>Seleccione una API</option>
-                        <option *ngFor="let api of apisInfo; let i = index" [value]="i">
-                          {{ api.nombre }}
-                        </option>
-                      </select>
+                      <div id="driver-api-label">
+                        <div class="d-flex align-items-center">
+                          <p class="nombre-input">Nombre API
+                            <button class="boton-ayuda">
+                              <div>?</div>
+                              <span class="tooltip tooltip-right">
+                                <p>Selecciona el nombre del servicio o API sobre el que se realizó la operación. </p>
+                              </span>
+                            </button>
+                          </p>
+                        </div>
+                        <select formControlName="nombreApi" id="nombreApi" id="driver-api-select"
+                          (change)="onNombreApiChange($event)">
+                          <option value="" disabled selected>Seleccione una API</option>
+                          <option *ngFor="let api of apisInfo; let i = index" [value]="i">
+                            {{ api.nombre }}
+                          </option>
+                        </select>
+                      </div>
                     </div>
                   </div>
-                  <button class="boton-accion" id="driver-buscar-btn" (click)="buscarLogs()"
-                    [disabled]="!logForm.valid">BUSCAR</button>
+                  <div class="row justify-content-between">
+                    <div class="col-12" style="display: flex;justify-content: space-between;">
+                      <button class="boton-accion" id="driver-buscar-btn" (click)="buscarLogs()"[disabled]="!logForm.valid">BUSCAR</button>
+                    </div>
+                  </div>
                 </div>
                 <div class="right-column">
                   <div class="row">
@@ -107,7 +114,7 @@
                       <input type="text" formControlName="codigoResponsable" id="driver-codigo-input">
                     </div>
                     <div class="col-12">
-                      <p class="nombre-input" id="driver-codigo-label">Palabra clave
+                      <p class="nombre-input" id="driver-palabra-clave-input">Palabra clave
                         <button class="boton-ayuda">
                           <div>?</div>
                           <span class="tooltip tooltip-right">
@@ -116,6 +123,11 @@
                         </button>
                       </p>
                       <input type="text" formControlName="palabraClave" id="driver-codigo-input">
+                    </div>
+                    <div class="col-12">
+                        <button id="export-btn" (click)="exportToCSV()" *ngIf="dataSource && dataSource.data.length > 0" class="export-button" mat-raised-button color="primary">
+                          <mat-icon>download</mat-icon> Exportar a CSV
+                        </button>
                     </div>
                   </div>
                 </div>
@@ -142,9 +154,9 @@
                   <td mat-cell *matCellDef="let element" class="contenido-celda">{{ element.ROLES }}</td>
                 </ng-container>
                 <ng-container matColumnDef="ACCIONES">
-                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-acciones"
+                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-acciones" id="driver-btn-detalle"
                     id="driver-col-acciones">ACCIONES</th>
-                  <td mat-cell *matCellDef="let element" class="contenido-celda" id="driver-btn-detalle">
+                  <td mat-cell *matCellDef="let element" class="contenido-celda">
                     <span>
                       <div class="boton-acciones">
                         <mat-icon class="icono-rojo" (click)="abrirDialogVerDetalleLog(element)">visibility<span

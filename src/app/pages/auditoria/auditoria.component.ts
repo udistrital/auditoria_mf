@@ -1,30 +1,20 @@
 import { Component, OnInit, signal, Input, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { VerDetalleLogDialogComponent } from './components/ver-detalle-log-dialog/ver-detalle-log-dialog.component';
-import { HttpClient } from '@angular/common/http';
 import { PopUpManager } from '../../managers/popUpManager';
 import { MAPEO_APIS } from 'src/app/shared/constantes';
 // @ts-ignore
 import Swal from 'sweetalert2/dist/sweetalert2.js';
-import { from, of, throwError } from 'rxjs';
+import { from, throwError } from 'rxjs';
 import { catchError, tap, map, switchMap } from 'rxjs/operators';
 import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
 import { driver } from 'driver.js';
-
-export interface LogData {
-  MODIFICACION: string;
-  FECHA: string;
-  ROLES: string;
-  ACCIONES?: string;
-}
-
-export interface InfoRootDetail {
-  appName: string;
-  clienteId?: string;
-}
+import { tutorialHome } from './tutorial';
+import { InfoRootDetail, LogData } from 'src/app/helpers/interfaces/IAuditoria';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-auditoria',
@@ -32,29 +22,21 @@ export interface InfoRootDetail {
   styleUrls: ['./auditoria.component.css']
 })
 export class AuditoriaComponent implements OnInit {
-  @Input('normalform') normalform: any;
   @ViewChild(MatPaginator) paginator !: MatPaginator;
-
+  @Input('normalform') normalform: any;
   columnasBusqueda = signal<string[]>(["MODIFICACION", "FECHA", "ROLES", "ACCIONES"]);
   tiposLogs: string[] = ['GET', 'POST', 'PUT', 'DELETE'];
   nombresApis: string[] = [];
   apisInfo: { nombre: string; entorno: string }[] = [];
   apiSeleccionada: { nombre: string; entorno: string } | null = null;
-
   days: number[] = Array.from({ length: 31 }, (_, i) => i + 1);
   months: number[] = Array.from({ length: 12 }, (_, i) => i + 1);
   years: number[] = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
-
   logForm !: FormGroup;
   dataSource!: MatTableDataSource<LogData>;
 
-  constructor(
-    public dialog: MatDialog,
-    private fb: FormBuilder,
-    private http: HttpClient,
-    private popUpManager: PopUpManager,
-    private auditoriaMidService: AuditoriaMidService,
-  ) {
+  constructor(public dialog: MatDialog, private fb: FormBuilder, private popUpManager: PopUpManager,
+    private auditoriaMidService: AuditoriaMidService,) {
     this.logForm = this.fb.group({
       fechaDesde: ['', Validators.required],
       horaDesde: ['', [Validators.required, this.timeValidator]],
@@ -125,7 +107,7 @@ export class AuditoriaComponent implements OnInit {
         next: (response: any) => {
           console.log('Respuesta de la API:', response);
           const logs = this.transformarRespuesta(response);
-          
+
           if (!Array.isArray(logs)) {
             this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
             throw new Error('Error en la transformación de datos');
@@ -159,7 +141,7 @@ export class AuditoriaComponent implements OnInit {
       });
   }
 
-  procesarResultados(resultados: any[]): Promise<void> {
+  private procesarResultados(resultados: any[]): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         if (resultados.length > 0) {
@@ -180,7 +162,7 @@ export class AuditoriaComponent implements OnInit {
     });
   }
 
-  funcionFormateoLog(jsonString: string): string {
+  private funcionFormateoLog(jsonString: string): string {
     try {
       const jsonCompleto = JSON.parse(jsonString);
       let cadenaData = jsonCompleto.data;
@@ -242,14 +224,14 @@ export class AuditoriaComponent implements OnInit {
     }
   }
 
-  fetchApiData(rootClienteId: string): void {
-    const baseUrl = 'https://autenticacion.portaloas.udistrital.edu.co/apioas/roles/v1';
+  private fetchApiData(rootClienteId: string): void {
+    const baseUrl = environment.ROLES_JBPM_SERVICE;
     const token = localStorage.getItem("access_token");
     const headers = {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     };
-    const url = `${baseUrl}/apis_cliente?cliente=${encodeURIComponent(rootClienteId)}`;
+    const url = `${baseUrl}apis_cliente?cliente=${encodeURIComponent(rootClienteId)}`;
     from(fetch(url, { headers })).pipe(
       switchMap(response => {
         if (!response.ok) {
@@ -289,145 +271,115 @@ export class AuditoriaComponent implements OnInit {
       //overlayColor: '#ba8181',
       popoverClass: 'driverjs-theme',
       showProgress: true,
-      steps: [
-        {
-          element: '#driver-title',
-          popover: {
-            title: 'Módulo de Auditoría',
-            description: 'Bienvenido al módulo de auditoría del sistema. Aquí podrás consultar todos los registros de actividad.',
-            side: 'bottom',
-            align: 'center'
-          }
-        },
-        {
-          element: '#driver-subtitle',
-          popover: {
-            title: 'Búsqueda de Logs',
-            description: 'En esta sección puedes filtrar los registros de auditoría según diferentes criterios.',
-            side: 'bottom',
-            align: 'center'
-          }
-        },
-        {
-          element: '#driver-fecha-label',
-          popover: {
-            title: 'Rango de Fechas',
-            description: 'Selecciona el rango de fechas para filtrar los registros. Puedes especificar fecha y hora exactas.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '#driver-fecha-desde-input',
-          popover: {
-            title: 'Fecha de inicio',
-            description: 'Selecciona la fecha y hora desde la cual deseas iniciar la búsqueda de logs. Asegúrate de que esté dentro del rango disponible del sistema',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '#driver-fecha-hasta-input',
-          popover: {
-            title: 'Fecha final',
-            description: 'Elige la fecha y hora hasta la cual deseas buscar los registros. Esta fecha debe ser posterior a la fecha de inicio.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '#driver-tipo-log-label',
-          popover: {
-            title: 'Tipo de Operación',
-            description: 'Filtra por tipo de operación HTTP (GET, POST, PUT, DELETE) para encontrar registros específicos.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '#driver-api-label',
-          popover: {
-            title: 'API Específica',
-            description: 'Selecciona el nombre del servicio o API sobre el que deseas ver los registros.',
-            side: 'right',
-            align: 'start'
-          }
-        },
-        {
-          element: '#driver-codigo-label',
-          popover: {
-            title: 'Código de Responsable',
-            description: 'Opcionalmente, puedes filtrar por el código del usuario que realizó la acción.',
-            side: 'left',
-            align: 'start'
-          }
-        },
-        {
-          element: '#driver-buscar-btn',
-          popover: {
-            title: 'Buscar Registros',
-            description: 'Haz clic aquí para ejecutar la búsqueda con los filtros seleccionados.',
-            side: 'top',
-            align: 'center'
-          }
-        },
-        {
-          element: '#driver-tabla',
-          popover: {
-            title: 'Resultados de Búsqueda',
-            description: 'Aquí se mostrarán los registros que coincidan con tus criterios de búsqueda.',
-            side: 'top',
-            align: 'center'
-          }
-        },
-        {
-          element: '#driver-col-tipo',
-          popover: {
-            title: 'Tipo de Operación',
-            description: 'Muestra el método HTTP utilizado en la operación registrada.',
-            side: 'top',
-            align: 'center'
-          }
-        },
-        {
-          element: '#driver-col-fecha',
-          popover: {
-            title: 'Fecha y Hora',
-            description: 'Indica cuándo se realizó la operación registrada.',
-            side: 'top',
-            align: 'center'
-          }
-        },
-        {
-          element: '#driver-col-rol',
-          popover: {
-            title: 'Rol del Usuario',
-            description: 'Muestra el rol del usuario que realizó la operación.',
-            side: 'top',
-            align: 'center'
-          }
-        },
-        {
-          element: '#driver-btn-detalle',
-          popover: {
-            title: 'Ver Detalles',
-            description: 'Haz clic en el ícono de ojo para ver todos los detalles del registro seleccionado.',
-            side: 'top',
-            align: 'center'
-          }
-        },
-        {
-          element: '#driver-paginador',
-          popover: {
-            title: 'Navegación',
-            description: 'Usa estos controles para navegar entre páginas de resultados.',
-            side: 'top',
-            align: 'center'
-          }
-        }
-      ]
+      steps: tutorialHome,
     });
 
     driverObj.drive();
+  }
+
+  exportToCSV(): void {
+    if (!this.dataSource || this.dataSource.data.length === 0) {
+      this.popUpManager.showErrorAlert('No hay datos para exportar');
+      return;
+    }
+
+    this.popUpManager.showLoaderAlert('Generando archivo CSV, por favor espere...');
+    
+    try {
+      // Clonar los datos para no modificar el original
+      const exportData = this.dataSource.data.map(item => {
+        const clonedItem = {...item};
+        
+        // Formatear los campos JSON para mejor legibilidad
+        if (clonedItem.PETICIONREALIZADA) {
+          try {
+            clonedItem.PETICIONREALIZADA = this.formatJsonForCSV(clonedItem.PETICIONREALIZADA);
+          } catch (e) {
+            console.warn('No se pudo formatear PETICIONREALIZADA:', e);
+          }
+        }
+        
+        if (clonedItem.EVENTOBD) {
+          try {
+            clonedItem.EVENTOBD = this.formatJsonForCSV(clonedItem.EVENTOBD);
+          } catch (e) {
+            console.warn('No se pudo formatear EVENTOBD:', e);
+          }
+        }
+        
+        return clonedItem;
+      });
+
+      const csvContent = this.convertToCSV(exportData);
+      this.downloadCSV(csvContent, `logs_auditoria_${new Date().toISOString().slice(0, 10)}.csv`);
+      this.popUpManager.showSuccessAlert('Archivo CSV generado con éxito');
+    } catch (error) {
+      console.error('Error al exportar a CSV:', error);
+      this.popUpManager.showErrorAlert('Error al generar el archivo CSV');
+    } finally {
+      Swal.close();
+    }
+  }
+
+  private formatJsonForCSV(jsonString: string): string {
+    try {
+      const jsonObj = JSON.parse(jsonString);
+      return JSON.stringify(jsonObj, null, 2)
+        .replace(/\n/g, ' ') // Reemplazar saltos de línea
+        .replace(/\r/g, ' ') // Reemplazar retornos de carro
+        .replace(/"/g, "'");  // Reemplazar comillas dobles por simples
+    } catch (e) {
+      return jsonString; // Si no es JSON válido, devolver el string original
+    }
+  }
+
+  private convertToCSV(data: LogData[]): string {
+    // Definir las columnas que queremos exportar
+    const columns = [
+      'MODIFICACION', 'FECHA', 'ROLES', 'NOMBRERESPONSABLE', 
+      'DOCUMENTORESPONSABLE', 'DIRECCIONACCION', 'APISCONSUMEN',
+      'PETICIONREALIZADA', 'EVENTOBD', 'TIPOERROR', 'MENSAJEERROR'
+    ];
+    
+    // Crear el encabezado CSV
+    let csv = columns.join(';') + '\n';
+    
+    // Agregar los datos
+    data.forEach((item: LogData) => {
+      const row = columns.map(col => {
+        // Usar type assertion para acceder a las propiedades dinámicas
+        const value = item[col as keyof LogData] || '';
+        if (typeof value === 'string') {
+          // Limpiar formato JSON si es necesario
+          if (col === 'PETICIONREALIZADA' || col === 'EVENTOBD') {
+            try {
+              const jsonObj = JSON.parse(value);
+              return `"${JSON.stringify(jsonObj).replace(/"/g, '""')}"`;
+            } catch (e) {
+              return `"${value.replace(/"/g, '""')}"`;
+            }
+          }
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return `"${String(value)}"`;
+      });
+      csv += row.join(';') + '\n';
+    });
+    
+    return csv;
+  }
+
+  private downloadCSV(csvContent: string, fileName: string): void {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

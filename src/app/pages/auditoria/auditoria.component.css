@@ -51,9 +51,7 @@
 
 
 .boton-accion {
-    margin-left: 0px;
-    padding-left: 20%;
-    padding-right: 20%;
+    padding: .5rem 1rem;
 }
 
 
@@ -238,3 +236,19 @@ button:disabled {
 }
 
 /* ----------------------------  */
+.export-button {
+    border: none;
+    background-color: #731514;
+    color: #FFFFFF;
+    border-radius: 5px;
+    padding: .5rem 1rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.export-button mat-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}

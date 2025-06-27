@@ -2,17 +2,15 @@ import { Injectable } from '@angular/core';
 import { RequestManager } from '../managers/requestManager';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { PopUpManager } from '../managers/popUpManager';
-import { catchError, Observable, of, switchMap, tap } from 'rxjs';
-import Swal from 'sweetalert2';
+import { Observable } from 'rxjs';
 import { HttpErrorManager } from '../managers/errorManager';
 import { environment } from '../../environments/environment';
-import { LogData } from '../pages/auditoria/auditoria.component';
 import { MatTableDataSource } from '@angular/material/table';
+import { LogData } from '../helpers/interfaces/IAuditoria';
 
 @Injectable({
   providedIn: 'root',
 })
-
 export class AuditoriaMidService {
   private path: any;
   public httpOptions: any;
