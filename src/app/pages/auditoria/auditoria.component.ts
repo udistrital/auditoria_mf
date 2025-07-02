@@ -114,7 +114,7 @@ export class AuditoriaComponent implements OnInit {
           }
           if (response && response.Data) {
             // Asignar datos directamente al dataSource
-            this.dataSource = new MatTableDataSource(response.Data);
+            this.dataSource = new MatTableDataSource(response.Resultados);
             this.dataSource.paginator = this.paginator;
 
             // Configurar paginación con los metadatos
@@ -201,7 +201,21 @@ export class AuditoriaComponent implements OnInit {
       width: '85%',
       height: 'auto',
       maxHeight: '65vh',
-      data: element
+      data: {
+        NOMBRERESPONSABLE:this.extraerDatosLog(element, 'user_agent'),
+        DOCUMENTORESPONSABLE:this.extraerDatosLog(element, 'parametro:string') || null,
+        DIRECCIONACCION:this.extraerDatosLog(element, 'direccionAccion'),
+        MODIFICACION:this.extraerDatosLog(element, 'parametro:string') || null,
+        FECHA:this.extraerDatosLog(element, 'fecha'),
+        ROL:this.extraerDatosLog(element, 'parametro:string') || null,
+        APISCONSUMEN:this.extraerDatosLog(element, 'parametro:string') || null,
+        PETICIONREALIZADA:this.extraerDatosLog(element, 'null') || null,
+        EVENTOBD:this.extraerDatosLog(element, 'sql_orm'),
+        TIPOERROR:this.extraerDatosLog(element, 'tipo_log'),
+        MENSAJEERROR:element,
+
+
+      } 
     });
   }
 
@@ -381,5 +395,85 @@ export class AuditoriaComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  extraerDatosLog(log:any, parametro:string) {
+    // Definimos los patrones de búsqueda para cada parámetro
+    const patrones:any = {
+        //sql_orm: /sql_orm: {([^}]*)}/,
+        sql_orm: /sql_orm:\s\{(.*?)\},\s+ip_user:/,
+        host: /host: ([^,]*)/,
+        //tipo_log: /\\u001b\[1;(\d+)m\[([A-Z])\]/,
+        tipo_log: /\[([a-zA-Z0-9._-]+)(?=\.\w+:)/,
+        fecha: /\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}/,
+        //fecha: /date:\s([^\s,]+)/,
+        //usuario: /user: ([^,]*)/,
+        usuario: /, user:\s([^\s,]+\s([a-zA-Z0-9._-]+))/,
+        //endpoint: /end_point: ([^,]*)/,
+        endpoint: /end_point:\s([^\s,]+)/,
+        metodo: /method: ([^,]*)/,
+        //metodo: /method:\s([^\s,]+)/,
+        ip_user: /ip_user: ([^,]*)/,
+        //user_agent: /user_agent: ([^,]*)/,
+        user_agent: /user_agent:\s([^\s,]+)/,
+        app_name: /app_name: ([^,]*)/,
+        fecha_iso: /date: ([^,]*)/,
+        router_pattern: /RouterPattern":"([^"]*)"/,
+
+        apiConsumen: /app_name:\s([^\s,]+)/,
+        api: /host:\s([^\s,]+)/,
+        direccionAccion: /ip_user:\s([^\s,]+)/,
+        data: /data:\s({.*})/,
+    };
+
+    try {
+        switch(parametro) {
+            case 'sql_orm':
+                const matchSql = log.match(patrones.sql_orm);
+                return matchSql ? matchSql[1].trim() : null;
+                
+            case 'host':
+                const matchHost = log.match(patrones.host);
+                return matchHost ? matchHost[1].trim() : null;
+                
+            case 'tipo_log':
+                const matchTipo = log.match(patrones.tipo_log);
+                if (matchTipo) {
+                    const colorCode = matchTipo[1];
+                    const letraTipo = matchTipo[2];
+                    return matchTipo ;
+                }
+                return null;
+                
+            case 'fecha':
+                const matchFecha = log.match(patrones.fecha);
+                return matchFecha ? matchFecha[0].trim() : null;
+                
+            case 'usuario':
+                const matchUsuario = log.match(patrones.usuario);
+                console.log(matchUsuario)
+                let usuario = matchUsuario[1] ? matchUsuario[1].trim() : null;
+                
+                // Procesamiento especial para usuarios según tus parámetros
+                if (usuario === "Error WSO2") {
+                    return "ERROR_WSO2_SIN_USUARIO";
+                } else if (usuario === "Usuario no registrado") {
+                    return "USUARIO_NO_REGISTRADO";
+                } else if (usuario === "Nombre no encontrado") {
+                    return "NOMBRE_NO_ENCONTRADO";
+                }
+                return usuario;
+                
+            default:
+                if (patrones[parametro]) {
+                    const match = log.match(patrones[parametro]);
+                    return match ? match[1].trim() : null;
+                }
+                return null;
+        }
+    } catch (e) {
+        console.error(`Error al procesar el log: ${e}`);
+        return null;
+    }
   }
 }
