@@ -64,7 +64,6 @@ export class AuditoriaMidService {
         params = params.append(key, payload[key]);
       }
     });
-    console.log('Parámetros de búsqueda:', params.toString());
     // Realizar la petición GET con los parámetros
     return this.http.get(`${this.path}auditoria/buscarLogsFiltrados`, { params },)
   }

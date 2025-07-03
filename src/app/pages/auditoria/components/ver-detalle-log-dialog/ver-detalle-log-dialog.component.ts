@@ -39,7 +39,6 @@ export class VerDetalleLogDialogComponent {
       mensajeError: [this.data.MENSAJEERROR || '']
     });
 
-    console.log("data que llega:", this.data);
   }
 
   onCloseClick(){

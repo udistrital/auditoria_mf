@@ -55,7 +55,6 @@ export class AuditoriaComponent implements OnInit {
       const customEvent = event as CustomEvent<InfoRootDetail>;
       if (customEvent.detail.appName === '@udistrital/auditoria-mf') {
         if (customEvent.detail.clienteId && customEvent.detail.clienteId.trim() !== '') {
-          console.log('Cliente ID recibido:', customEvent.detail.clienteId);
           this.fetchApiData(customEvent.detail.clienteId);
         } else {
           alert('No esta llegando el clienteId del root');
@@ -89,7 +88,6 @@ export class AuditoriaComponent implements OnInit {
       pagina: 1,
       limite: 5000
     };
-    console.log(payload)
 
     const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipo_log', 'nombreApi', 'entornoApi'];
     const missingFields = requiredFields.filter(field => !payload[field]);
@@ -105,7 +103,6 @@ export class AuditoriaComponent implements OnInit {
     this.auditoriaMidService.buscarLogsFiltrados(payload)
       .subscribe({
         next: (response: any) => {
-          console.log('Respuesta de la API:', response);
           const logs = this.transformarRespuesta(response);
 
           if (!Array.isArray(logs)) {
@@ -241,7 +238,7 @@ export class AuditoriaComponent implements OnInit {
         }
         return from(response.json());
       }),
-      tap(data => console.log(data)),
+      tap(data => {}),
       map(data => {
         if (data?.cliente?.api) {
           this.apisInfo = data.cliente.api.map((api: any) => {
@@ -252,7 +249,6 @@ export class AuditoriaComponent implements OnInit {
               entorno: api.entorno,
             };
           });
-          console.log('Información de APIs:', this.apisInfo);
         }
         return data;
       }),
