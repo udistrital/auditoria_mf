@@ -38,8 +38,6 @@ export class VerDetalleLogDialogComponent {
       tipoError: [this.data.TIPOERROR || ''],
       mensajeError: [this.data.MENSAJEERROR || '']
     });
-
-    console.log("data que llega:", this.data);
   }
 
   onCloseClick(){

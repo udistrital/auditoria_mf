@@ -15,6 +15,7 @@ import { driver } from 'driver.js';
 import { tutorialHome } from './tutorial';
 import { InfoRootDetail, LogData } from 'src/app/helpers/interfaces/IAuditoria';
 import { environment } from 'src/environments/environment';
+import { fechaHastaMayorQueDesde } from 'src/app/helpers/validators/restriccion-fechas';
 
 @Component({
   selector: 'app-auditoria',
@@ -46,7 +47,7 @@ export class AuditoriaComponent implements OnInit {
       codigoResponsable: [''],
       nombreApi: ['', Validators.required],
       palabraClave: ['',]
-    });
+    }, { validators: fechaHastaMayorQueDesde });
   }
 
   ngOnInit(): void {
@@ -55,7 +56,6 @@ export class AuditoriaComponent implements OnInit {
       const customEvent = event as CustomEvent<InfoRootDetail>;
       if (customEvent.detail.appName === '@udistrital/auditoria-mf') {
         if (customEvent.detail.clienteId && customEvent.detail.clienteId.trim() !== '') {
-          console.log('Cliente ID recibido:', customEvent.detail.clienteId);
           this.fetchApiData(customEvent.detail.clienteId);
         } else {
           alert('No esta llegando el clienteId del root');
@@ -89,7 +89,6 @@ export class AuditoriaComponent implements OnInit {
       pagina: 1,
       limite: 5000
     };
-    console.log(payload)
 
     const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipo_log', 'nombreApi', 'entornoApi'];
     const missingFields = requiredFields.filter(field => !payload[field]);
@@ -113,13 +112,13 @@ export class AuditoriaComponent implements OnInit {
           if (response && response.Data) {
             // Asignar datos directamente al dataSource
             this.dataSource = new MatTableDataSource(response.Data);
-            this.dataSource.paginator = this.paginator;
 
             // Configurar paginación con los metadatos
             if (response.Pagination) {
               this.paginator.length = response.Pagination.total;
               this.paginator.pageSize = 100;
             }
+            this.dataSource.paginator = this.paginator;
 
           } else {
             this.popUpManager.showErrorAlert('No se encontraron registros');
@@ -165,7 +164,7 @@ export class AuditoriaComponent implements OnInit {
       maxHeight: '65vh',
       data: {
         ACCIONES: 'Ver',
-        NOMBRERESPONSABLE: this.extraerDatosLog(element, 'usuario') || 'Sin nombre',
+        NOMBRERESPONSABLE: 'Sin nombre',
         DOCUMENTORESPONSABLE: this.extraerDatosLog(element, 'documentoResponsable') || 'Sin documento',
         DIRECCIONACCION: this.extraerDatosLog(element, 'direccionAccion') || 'Sin direccion',
         MODIFICACION: this.extraerDatosLog(element, 'tipo_log') || 'Sin tipo',
@@ -217,7 +216,7 @@ export class AuditoriaComponent implements OnInit {
         }
         return from(response.json());
       }),
-      tap(data => console.log(data)),
+      tap(data => {}),
       map(data => {
         if (data?.cliente?.api) {
           this.apisInfo = data.cliente.api.map((api: any) => {
@@ -228,7 +227,6 @@ export class AuditoriaComponent implements OnInit {
               entorno: api.entorno,
             };
           });
-          console.log('Información de APIs:', this.apisInfo);
         }
         return data;
       }),
@@ -335,15 +333,10 @@ export class AuditoriaComponent implements OnInit {
       host: /host: ([^,]*)/,
       tipo_log: /\[([a-zA-Z0-9._-]+)(?=\.\w+:)/,
       fecha: /\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}/,
-      //fecha: /date:\s([^\s,]+)/,
-      //usuario: /user: ([^,]*)/,
       usuario: /, user:\s([^\s,]+\s([a-zA-Z0-9._-]+))/,
-      //endpoint: /end_point: ([^,]*)/,
       endpoint: /end_point:\s([^\s,]+)/,
       metodo: /method: ([^,]*)/,
-      //metodo: /method:\s([^\s,]+)/,
       ip_user: /ip_user: ([^,]*)/,
-      //user_agent: /user_agent: ([^,]*)/,
       user_agent: /user_agent:\s([^\s,]+)/,
       app_name: /app_name: ([^,]*)/,
       fecha_iso: /date: ([^,]*)/,
