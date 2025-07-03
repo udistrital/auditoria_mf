@@ -9,12 +9,13 @@ import { MAPEO_APIS } from 'src/app/shared/constantes';
 // @ts-ignore
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { from, throwError } from 'rxjs';
-import { catchError, tap, map, switchMap } from 'rxjs/operators';
+import { catchError, tap, map, switchMap, finalize } from 'rxjs/operators';
 import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
 import { driver } from 'driver.js';
 import { tutorialHome } from './tutorial';
 import { InfoRootDetail, LogData } from 'src/app/helpers/interfaces/IAuditoria';
 import { environment } from 'src/environments/environment';
+import { fechaHastaMayorQueDesde } from 'src/app/helpers/validators/restriccion-fechas';
 
 @Component({
   selector: 'app-auditoria',
@@ -46,7 +47,7 @@ export class AuditoriaComponent implements OnInit {
       codigoResponsable: [''],
       nombreApi: ['', Validators.required],
       palabraClave: ['',]
-    });
+    }, { validators: fechaHastaMayorQueDesde });
   }
 
   ngOnInit(): void {
@@ -101,30 +102,27 @@ export class AuditoriaComponent implements OnInit {
     }
 
     this.auditoriaMidService.buscarLogsFiltrados(payload)
+      .pipe(
+        finalize(() => {
+          this.popUpManager.showSuccessAlert('Datos cargados con éxito');
+        })
+      )
       .subscribe({
         next: (response: any) => {
-          const logs = this.transformarRespuesta(response);
-
-          if (!Array.isArray(logs)) {
-            this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
-            throw new Error('Error en la transformación de datos');
-          }
           if (response && response.Data) {
             // Asignar datos directamente al dataSource
             this.dataSource = new MatTableDataSource(response.Data);
-            this.dataSource.paginator = this.paginator;
 
             // Configurar paginación con los metadatos
             if (response.Pagination) {
               this.paginator.length = response.Pagination.total;
               this.paginator.pageSize = 100;
             }
+            this.dataSource.paginator = this.paginator;
 
           } else {
             this.popUpManager.showErrorAlert('No se encontraron registros');
           }
-
-          return this.procesarResultados(logs); // debe devolver Observable o Promise
         },
         error: (error) => {
           console.error('Error en la petición:', error);
@@ -159,46 +157,26 @@ export class AuditoriaComponent implements OnInit {
     });
   }
 
-  private funcionFormateoLog(jsonString: string): string {
-    try {
-      const jsonCompleto = JSON.parse(jsonString);
-      let cadenaData = jsonCompleto.data;
-      cadenaData = cadenaData.slice(0, -1);
-      const subJson = JSON.parse(cadenaData);
-      jsonCompleto.data = subJson;
-      return JSON.stringify(jsonCompleto, null, 2);
-    } catch (error) {
-      return jsonString;
-    }
-  }
-
-  private transformarRespuesta(response: any): LogData[] {
-    if (!response || !response.Data || !Array.isArray(response.Data)) {
-      return [];
-    }
-    return response.Data.map((log: any) => ({
-      MODIFICACION: log.tipo_log || 'Sin tipo',
-      FECHA: log.fecha || 'Sin fecha',
-      ROL: log.rolResponsable || 'Sin usuario',
-      ACCIONES: 'Ver',
-      ROLES: log.rol || 'Rol no encontrado',
-      NOMBRERESPONSABLE: log.nombreResponsable || 'Sin nombre',
-      DOCUMENTORESPONSABLE: log.documentoResponsable || 'Sin documento',
-      DIRECCIONACCION: log.direccionAccion || 'Sin direccion',
-      APISCONSUMEN: log.apisConsumen || 'Sin apis',
-      PETICIONREALIZADA: this.funcionFormateoLog(log.peticionRealizada || 'Sin peticion'),
-      EVENTOBD: log.eventoBD || 'Sin evento de la BD',
-      TIPOERROR: log.tipoError || 'Sin tipo de error',
-      MENSAJEERROR: log.mensajeError || 'Sin mensaje de error'
-    }));
-  }
-
   abrirDialogVerDetalleLog(element: any): void {
     const dialogRef = this.dialog.open(VerDetalleLogDialogComponent, {
       width: '85%',
       height: 'auto',
       maxHeight: '65vh',
-      data: element
+      data: {
+        ACCIONES: 'Ver',
+        NOMBRERESPONSABLE: 'Sin nombre',
+        DOCUMENTORESPONSABLE: this.extraerDatosLog(element, 'documentoResponsable') || 'Sin documento',
+        DIRECCIONACCION: this.extraerDatosLog(element, 'direccionAccion') || 'Sin direccion',
+        MODIFICACION: this.extraerDatosLog(element, 'tipo_log') || 'Sin tipo',
+        FECHA: this.extraerDatosLog(element, 'fecha') || 'Sin fecha',
+        ROL: this.extraerDatosLog(element, 'usuario') || null,
+        ROLES: this.extraerDatosLog(element, 'rol') || 'Rol no encontrado',
+        APISCONSUMEN: this.extraerDatosLog(element, 'app_name') || 'Sin apis',
+        PETICIONREALIZADA: this.extraerDatosLog(element, 'peticion') || 'Sin peticion',
+        EVENTOBD: this.extraerDatosLog(element, 'sql_orm') || 'Sin evento de la BD',
+        TIPOERROR: this.extraerDatosLog(element, 'tipo_log') || 'Sin tipo de error',
+        MENSAJEERROR: element || 'Sin mensaje de error',
+      }
     });
   }
 
@@ -280,30 +258,23 @@ export class AuditoriaComponent implements OnInit {
     }
 
     this.popUpManager.showLoaderAlert('Generando archivo CSV, por favor espere...');
-    
+
     try {
-      // Clonar los datos para no modificar el original
-      const exportData = this.dataSource.data.map(item => {
-        const clonedItem = {...item};
-        
-        // Formatear los campos JSON para mejor legibilidad
-        if (clonedItem.PETICIONREALIZADA) {
-          try {
-            clonedItem.PETICIONREALIZADA = this.formatJsonForCSV(clonedItem.PETICIONREALIZADA);
-          } catch (e) {
-            console.warn('No se pudo formatear PETICIONREALIZADA:', e);
-          }
-        }
-        
-        if (clonedItem.EVENTOBD) {
-          try {
-            clonedItem.EVENTOBD = this.formatJsonForCSV(clonedItem.EVENTOBD);
-          } catch (e) {
-            console.warn('No se pudo formatear EVENTOBD:', e);
-          }
-        }
-        
-        return clonedItem;
+      // Procesar cada registro para extraer los datos necesarios
+      const exportData = this.dataSource.data.map(log => {
+        return {
+          MODIFICACION: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo',
+          FECHA: this.extraerDatosLog(log, 'fecha') || 'Sin fecha',
+          ROLES: this.extraerDatosLog(log, 'rol') || 'Rol no encontrado',
+          NOMBRERESPONSABLE: this.extraerDatosLog(log, 'usuario') || 'Sin nombre',
+          DOCUMENTORESPONSABLE: this.extraerDatosLog(log, 'documentoResponsable') || 'Sin documento',
+          DIRECCIONACCION: this.extraerDatosLog(log, 'direccionAccion') || 'Sin direccion',
+          APISCONSUMEN: this.extraerDatosLog(log, 'app_name') || 'Sin apis',
+          PETICIONREALIZADA: this.extraerDatosLog(log, 'peticion') || 'Sin peticion',
+          EVENTOBD: this.extraerDatosLog(log, 'sql_orm') || 'Sin evento de la BD',
+          TIPOERROR: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo de error',
+          MENSAJEERROR: JSON.stringify(log) || 'Sin mensaje de error'
+        };
       });
 
       const csvContent = this.convertToCSV(exportData);
@@ -317,51 +288,27 @@ export class AuditoriaComponent implements OnInit {
     }
   }
 
-  private formatJsonForCSV(jsonString: string): string {
-    try {
-      const jsonObj = JSON.parse(jsonString);
-      return JSON.stringify(jsonObj, null, 2)
-        .replace(/\n/g, ' ') // Reemplazar saltos de línea
-        .replace(/\r/g, ' ') // Reemplazar retornos de carro
-        .replace(/"/g, "'");  // Reemplazar comillas dobles por simples
-    } catch (e) {
-      return jsonString; // Si no es JSON válido, devolver el string original
-    }
-  }
-
-  private convertToCSV(data: LogData[]): string {
+  private convertToCSV(data: any[]): string {
     // Definir las columnas que queremos exportar
     const columns = [
-      'MODIFICACION', 'FECHA', 'ROLES', 'NOMBRERESPONSABLE', 
+      'MODIFICACION', 'FECHA', 'ROLES', 'NOMBRERESPONSABLE',
       'DOCUMENTORESPONSABLE', 'DIRECCIONACCION', 'APISCONSUMEN',
       'PETICIONREALIZADA', 'EVENTOBD', 'TIPOERROR', 'MENSAJEERROR'
     ];
-    
+
     // Crear el encabezado CSV
     let csv = columns.join(';') + '\n';
-    
+
     // Agregar los datos
-    data.forEach((item: LogData) => {
+    data.forEach((item: any) => {
       const row = columns.map(col => {
-        // Usar type assertion para acceder a las propiedades dinámicas
-        const value = item[col as keyof LogData] || '';
-        if (typeof value === 'string') {
-          // Limpiar formato JSON si es necesario
-          if (col === 'PETICIONREALIZADA' || col === 'EVENTOBD') {
-            try {
-              const jsonObj = JSON.parse(value);
-              return `"${JSON.stringify(jsonObj).replace(/"/g, '""')}"`;
-            } catch (e) {
-              return `"${value.replace(/"/g, '""')}"`;
-            }
-          }
-          return `"${value.replace(/"/g, '""')}"`;
-        }
-        return `"${String(value)}"`;
+        const value = item[col] || '';
+        // Escapar comillas y saltos de línea para formato CSV
+        return `"${String(value).replace(/"/g, '""')}"`;
       });
       csv += row.join(';') + '\n';
     });
-    
+
     return csv;
   }
 
@@ -377,5 +324,84 @@ export class AuditoriaComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  extraerDatosLog(log: any, parametro: string) {
+    // Definimos los patrones de búsqueda para cada parámetro
+    const patrones: any = {
+      sql_orm: /sql_orm:\s\{(.*?)\},\s+ip_user:/,
+      host: /host: ([^,]*)/,
+      tipo_log: /\[([a-zA-Z0-9._-]+)(?=\.\w+:)/,
+      fecha: /\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}/,
+      usuario: /, user:\s([^\s,]+\s([a-zA-Z0-9._-]+))/,
+      endpoint: /end_point:\s([^\s,]+)/,
+      metodo: /method: ([^,]*)/,
+      ip_user: /ip_user: ([^,]*)/,
+      user_agent: /user_agent:\s([^\s,]+)/,
+      app_name: /app_name: ([^,]*)/,
+      fecha_iso: /date: ([^,]*)/,
+      router_pattern: /RouterPattern":"([^"]*)"/,
+      apiConsumen: /app_name:\s([^\s,]+)/,
+      api: /host:\s([^\s,]+)/,
+      direccionAccion: /ip_user:\s([^\s,]+)/,
+      data: /data:\s({.*})/,
+    };
+
+    try {
+      switch (parametro) {
+        case 'sql_orm':
+          const matchSql = log.match(patrones.sql_orm);
+          return matchSql ? matchSql[1].trim() : null;
+
+        case 'host':
+          const matchHost = log.match(patrones.host);
+          return matchHost ? matchHost[1].trim() : null;
+
+        case 'tipo_log':
+          const matchTipo = log.match(patrones.tipo_log);
+          return matchTipo[1];
+
+        case 'fecha':
+          const matchFecha = log.match(patrones.fecha);
+          return matchFecha ? matchFecha[0].trim() : null;
+
+        case 'peticion':
+          const data: any = {
+            end_point: this.extraerDatosLog(log, 'end_point') || '/',
+            api: this.extraerDatosLog(log, 'host'),
+            metodo: this.extraerDatosLog(log, 'metodo'),
+            usuario: this.extraerDatosLog(log, 'user'),
+            data: this.extraerDatosLog(log, 'data'),
+          }
+          return JSON.stringify(data, null, 2);
+
+        case 'user':
+          const matchUser = log.match(patrones.usuario);
+          return matchUser[1] ? matchUser[1].trim() : null;
+        case 'usuario':
+          const matchUsuario = log.match(patrones.usuario);
+          let usuario = matchUsuario && matchUsuario[1] ? matchUsuario[1].trim() : "";
+
+          const INVALIDOS = ["N/A", "Error", "Error WSO2", "", "null", undefined, null];
+
+          if (!INVALIDOS.includes(usuario)) {
+            usuario += "@udistrital.edu.co";
+          } else {
+            usuario = "Error WSO2 - Sin usuario";
+          }
+
+          return usuario;
+
+        default:
+          if (patrones[parametro]) {
+            const match = log.match(patrones[parametro]);
+            return match ? match[1].trim() : null;
+          }
+          return null;
+      }
+    } catch (e) {
+      console.error(`Error al procesar el log: ${e}`);
+      return null;
+    }
   }
 }

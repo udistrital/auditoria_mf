@@ -32,7 +32,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
   declarations: [
     AppComponent,
     AuditoriaComponent,
-    VerDetalleLogDialogComponent
+    VerDetalleLogDialogComponent,
   ],
   imports: [
     FormsModule,
