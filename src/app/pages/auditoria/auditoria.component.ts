@@ -35,6 +35,7 @@ export class AuditoriaComponent implements OnInit {
   years: number[] = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
   logForm !: FormGroup;
   dataSource!: MatTableDataSource<LogData>;
+  typeSearch:string='';
 
   constructor(public dialog: MatDialog, private fb: FormBuilder, private popUpManager: PopUpManager,
     private auditoriaMidService: AuditoriaMidService,) {
@@ -66,6 +67,7 @@ export class AuditoriaComponent implements OnInit {
     window.dispatchEvent(new CustomEvent('clienteAuditoria', { detail: { appName: '@udistrital/auditoria-mf' } }));
   }
 
+
   buscarLogs(): void {
     this.dataSource.data = [];
     this.popUpManager.showLoaderAlert('Obteniendo datos, por favor espere.');
@@ -86,6 +88,83 @@ export class AuditoriaComponent implements OnInit {
       palabraClave: formValues.palabraClave,
       nombreApi: this.apiSeleccionada.nombre,
       entornoApi: this.apiSeleccionada.entorno,
+      typeSearch: this.typeSearch,
+      pagina: 1,
+      limite: 5000
+    };
+    console.log(payload)
+
+    const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipo_log', 'nombreApi', 'entornoApi'];
+    const missingFields = requiredFields.filter(field => !payload[field]);
+
+    if (missingFields.length > 0) {
+      this.popUpManager.showErrorAlert(
+        `Los siguientes campos son obligatorios: ${missingFields.join(', ')}`
+      );
+      Swal.close();
+      return;
+    }
+
+    this.auditoriaMidService.buscarLogsFiltrados(payload)
+      .subscribe({
+        next: (response: any) => {
+          console.log('Respuesta de la API:', response);
+          const logs = this.transformarRespuesta(response);
+
+          if (!Array.isArray(logs)) {
+            this.popUpManager.showErrorAlert('Error al procesar los datos devueltos por la API.');
+            throw new Error('Error en la transformación de datos');
+          }
+          if (response && response.Data) {
+            // Asignar datos directamente al dataSource
+            this.dataSource = new MatTableDataSource(response.Data);
+            this.dataSource.paginator = this.paginator;
+
+            // Configurar paginación con los metadatos
+            if (response.Pagination) {
+              this.paginator.length = response.Pagination.total;
+              this.paginator.pageSize = 100;
+            }
+
+          } else {
+            this.popUpManager.showErrorAlert('No se encontraron registros');
+          }
+
+          return this.procesarResultados(logs); // debe devolver Observable o Promise
+        },
+        error: (error) => {
+          console.error('Error en la petición:', error);
+          if (error.status === 404) {
+            this.popUpManager.showErrorAlert('No se encontraron datos en el rango de fechas y horas especificado, asociados con el tipo de LOG.');
+          } else {
+            this.popUpManager.showErrorAlert('Se generó un error al buscar los datos.');
+          }
+          return [];
+        }
+      });
+  }
+
+  buscarLogsFiltrados(): void {
+    this.dataSource.data = [];
+    this.popUpManager.showLoaderAlert('Obteniendo datos, por favor espere.');
+    const formValues = this.logForm.value;
+
+    if (!this.apiSeleccionada) {
+      this.popUpManager.showErrorAlert('Debe seleccionar una API válida.');
+      return;
+    }
+
+    const payload: { [key: string]: any } = {
+      fechaInicio: formValues.fechaDesde,
+      horaInicio: formValues.horaDesde,
+      fechaFin: formValues.fechaHasta,
+      horaFin: formValues.horaHasta,
+      tipo_log: formValues.tipo_log,
+      codigoResponsable: formValues.codigoResponsable,
+      palabraClave: formValues.palabraClave,
+      nombreApi: this.apiSeleccionada.nombre,
+      entornoApi: this.apiSeleccionada.entorno,
+      typeSearch: this.typeSearch,
       pagina: 1,
       limite: 5000
     };
@@ -156,8 +235,16 @@ export class AuditoriaComponent implements OnInit {
       }
     });
   }
-
   abrirDialogVerDetalleLog(element: any): void {
+      const dialogRef = this.dialog.open(VerDetalleLogDialogComponent, {
+        width: '85%',
+        height: 'auto',
+        maxHeight: '65vh',
+        data: element
+      });
+    }
+
+  abrirDialogVerDetalleLogFiltrados(element: any): void {
     const dialogRef = this.dialog.open(VerDetalleLogDialogComponent, {
       width: '85%',
       height: 'auto',
@@ -239,6 +326,39 @@ export class AuditoriaComponent implements OnInit {
       })
     ).subscribe();
   }
+
+  private funcionFormateoLog(jsonString: string): string {
+    try {
+      const jsonCompleto = JSON.parse(jsonString);
+      let cadenaData = jsonCompleto.data;
+      cadenaData = cadenaData.slice(0, -1);
+      const subJson = JSON.parse(cadenaData);
+      jsonCompleto.data = subJson;
+      return JSON.stringify(jsonCompleto, null, 2);
+    } catch (error) {
+      return jsonString;
+    }
+  }
+  private transformarRespuesta(response: any): LogData[] {
+      if (!response || !response.Data || !Array.isArray(response.Data)) {
+        return [];
+      }
+      return response.Data.map((log: any) => ({
+        MODIFICACION: log.tipo_log || 'Sin tipo',
+        FECHA: log.fecha || 'Sin fecha',
+        ROL: log.rolResponsable || 'Sin usuario',
+        ACCIONES: 'Ver',
+        ROLES: log.rol || 'Rol no encontrado',
+        NOMBRERESPONSABLE: log.nombreResponsable || 'Sin nombre',
+        DOCUMENTORESPONSABLE: log.documentoResponsable || 'Sin documento',
+        DIRECCIONACCION: log.direccionAccion || 'Sin direccion',
+        APISCONSUMEN: log.apisConsumen || 'Sin apis',
+        PETICIONREALIZADA: this.funcionFormateoLog(log.peticionRealizada || 'Sin peticion'),
+        EVENTOBD: log.eventoBD || 'Sin evento de la BD',
+        TIPOERROR: log.tipoError || 'Sin tipo de error',
+        MENSAJEERROR: log.mensajeError || 'Sin mensaje de error'
+      }));
+    }
 
   startTour() {
     const driverObj = driver({
