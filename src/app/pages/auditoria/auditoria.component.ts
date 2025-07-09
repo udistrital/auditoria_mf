@@ -382,19 +382,41 @@ export class AuditoriaComponent implements OnInit {
     try {
       // Procesar cada registro para extraer los datos necesarios
       const exportData = this.dataSource.data.map(log => {
-        return {
-          MODIFICACION: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo',
-          FECHA: this.extraerDatosLog(log, 'fecha') || 'Sin fecha',
-          ROLES: this.extraerDatosLog(log, 'rol') || 'Rol no encontrado',
-          NOMBRERESPONSABLE: this.extraerDatosLog(log, 'usuario') || 'Sin nombre',
-          DOCUMENTORESPONSABLE: this.extraerDatosLog(log, 'documentoResponsable') || 'Sin documento',
-          DIRECCIONACCION: this.extraerDatosLog(log, 'direccionAccion') || 'Sin direccion',
-          APISCONSUMEN: this.extraerDatosLog(log, 'app_name') || 'Sin apis',
-          PETICIONREALIZADA: this.extraerDatosLog(log, 'peticion') || 'Sin peticion',
-          EVENTOBD: this.extraerDatosLog(log, 'sql_orm') || 'Sin evento de la BD',
-          TIPOERROR: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo de error',
-          MENSAJEERROR: JSON.stringify(log) || 'Sin mensaje de error'
-        };
+        if(this.typeSearch==='flexible'){
+          return {
+            MODIFICACION: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo',
+            FECHA: this.extraerDatosLog(log, 'fecha') || 'Sin fecha',
+            ROLES: this.extraerDatosLog(log, 'rol') || 'Rol no encontrado',
+            NOMBRERESPONSABLE: this.extraerDatosLog(log, 'usuario') || 'Sin nombre',
+            DOCUMENTORESPONSABLE: this.extraerDatosLog(log, 'documentoResponsable') || 'Sin documento',
+            DIRECCIONACCION: this.extraerDatosLog(log, 'direccionAccion') || 'Sin direccion',
+            APISCONSUMEN: this.extraerDatosLog(log, 'app_name') || 'Sin apis',
+            PETICIONREALIZADA: this.extraerDatosLog(log, 'peticion') || 'Sin peticion',
+            EVENTOBD: this.extraerDatosLog(log, 'sql_orm') || 'Sin evento de la BD',
+            TIPOERROR: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo de error',
+            MENSAJEERROR: JSON.stringify(log) || 'Sin mensaje de error'
+          };
+        }else{
+          const clonedItem = {...log};
+          // Formatear los campos JSON para mejor legibilidad
+          if (clonedItem.PETICIONREALIZADA) {
+            try {
+              clonedItem.PETICIONREALIZADA = this.formatJsonForCSV(clonedItem.PETICIONREALIZADA);
+            } catch (e) {
+              console.warn('No se pudo formatear PETICIONREALIZADA:', e);
+            }
+          }
+
+          if (clonedItem.EVENTOBD) {
+            try {
+              clonedItem.EVENTOBD = this.formatJsonForCSV(clonedItem.EVENTOBD);
+            } catch (e) {
+              console.warn('No se pudo formatear EVENTOBD:', e);
+            }
+          }
+
+          return clonedItem;
+        }
       });
 
       const csvContent = this.convertToCSV(exportData);
@@ -423,8 +445,25 @@ export class AuditoriaComponent implements OnInit {
     data.forEach((item: any) => {
       const row = columns.map(col => {
         const value = item[col] || '';
-        // Escapar comillas y saltos de línea para formato CSV
-        return `"${String(value).replace(/"/g, '""')}"`;
+        if (this.typeSearch==='flexible') {
+          if (typeof value === 'string') {
+            // Limpiar formato JSON si es necesario
+            if (col === 'PETICIONREALIZADA' || col === 'EVENTOBD') {
+              try {
+                const jsonObj = JSON.parse(value);
+                return `"${JSON.stringify(jsonObj).replace(/"/g, '""')}"`;
+              } catch (e) {
+                return `"${value.replace(/"/g, '""')}"`;
+              }
+            }
+            return `"${value.replace(/"/g, '""')}"`;
+          }else{
+            return `"${String(value)}"`;
+          }
+        }else{
+          // Escapar comillas y saltos de línea para formato CSV
+          return `"${String(value).replace(/"/g, '""')}"`;
+        }
       });
       csv += row.join(';') + '\n';
     });
@@ -444,6 +483,62 @@ export class AuditoriaComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  exportToCSV3(): void {
+    if (!this.dataSource || this.dataSource.data.length === 0) {
+      this.popUpManager.showErrorAlert('No hay datos para exportar');
+      return;
+    }
+
+    this.popUpManager.showLoaderAlert('Generando archivo CSV, por favor espere...');
+    
+    try {
+      // Clonar los datos para no modificar el original
+      const exportData = this.dataSource.data.map(log => {
+        const clonedItem = {...log};
+        
+        // Formatear los campos JSON para mejor legibilidad
+        if (clonedItem.PETICIONREALIZADA) {
+          try {
+            clonedItem.PETICIONREALIZADA = this.formatJsonForCSV(clonedItem.PETICIONREALIZADA);
+          } catch (e) {
+            console.warn('No se pudo formatear PETICIONREALIZADA:', e);
+          }
+        }
+        
+        if (clonedItem.EVENTOBD) {
+          try {
+            clonedItem.EVENTOBD = this.formatJsonForCSV(clonedItem.EVENTOBD);
+          } catch (e) {
+            console.warn('No se pudo formatear EVENTOBD:', e);
+          }
+        }
+        
+        return clonedItem;
+      });
+
+      const csvContent = this.convertToCSV(exportData);
+      this.downloadCSV(csvContent, `logs_auditoria_${new Date().toISOString().slice(0, 10)}.csv`);
+      this.popUpManager.showSuccessAlert('Archivo CSV generado con éxito');
+    } catch (error) {
+      console.error('Error al exportar a CSV:', error);
+      this.popUpManager.showErrorAlert('Error al generar el archivo CSV');
+    } finally {
+      Swal.close();
+    }
+  }
+
+  private formatJsonForCSV(jsonString: string): string {
+    try {
+      const jsonObj = JSON.parse(jsonString);
+      return JSON.stringify(jsonObj, null, 2)
+        .replace(/\n/g, ' ') // Reemplazar saltos de línea
+        .replace(/\r/g, ' ') // Reemplazar retornos de carro
+        .replace(/"/g, "'");  // Reemplazar comillas dobles por simples
+    } catch (e) {
+      return jsonString; // Si no es JSON válido, devolver el string original
+    }
   }
 
   extraerDatosLog(log: any, parametro: string) {
