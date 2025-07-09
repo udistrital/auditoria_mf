@@ -38,7 +38,7 @@
                               <input type="date" formControlName="fechaDesde" class="form-control m-0">
                             </div>
                             <div class="col-5">
-                              <input type="time" id="horaDesde" formControlName="horaDesde"class="form-control m-0" />
+                              <input type="time" id="horaDesde" formControlName="horaDesde" class="form-control m-0" />
                             </div>
                           </div>
                         </div>
@@ -59,7 +59,8 @@
                             </div>
                             <div class="col-5">
                               <div class="time-input-container">
-                                <input type="time" id="horaHasta" formControlName="horaHasta"class="form-control m-0" />
+                                <input type="time" id="horaHasta" formControlName="horaHasta"
+                                  class="form-control m-0" />
                               </div>
                             </div>
                           </div>
@@ -135,10 +136,20 @@
                 </div>
                 <div class="col-12">
                   <div class="row justify-content-between align-items-center mt-3">
-                    <div class="col-6 col-md-3">
+                    <div class="col-3 col-md-3">
                       <div class="col-12" style="display: flex;justify-content: space-between;">
-                        <button class="boton-accion" id="driver-buscar-btn" (click)="buscarLogs()"
-                          [disabled]="!logForm.valid">BUSCAR</button>
+                        <button class="boton-accion" id="driver-buscar-btn" (click)="typeSearch='standard';buscarLogs()"
+                          data-bs-toggle="tooltip" data-bs-placement="top"
+                          title="Procesamiento de los datos realizada desde el servidor"
+                          [disabled]="!logForm.valid">Búsqueda Estándar</button>
+                      </div>
+                    </div>
+                    <div class="col-3 col-md-3">
+                      <div class="col-12" style="display: flex;justify-content: space-between;">
+                        <button class="boton-accion" id="driver-buscar-btn" (click)="typeSearch='flexible'; buscarLogsFiltrados()"
+                          data-bs-toggle="tooltip" data-bs-placement="top"
+                          title="Procesamiento de los datos realizada desde el aplicativo web"
+                          [disabled]="!logForm.valid">Búsqueda Flexible</button>
                       </div>
                     </div>
                     <div class="col-6 col-md-3">
@@ -158,13 +169,13 @@
             <br>
             <mat-divider class="divider"></mat-divider>
             <ng-container>
+              <ng-container *ngIf="typeSearch === 'flexible'; else backendTable">
               <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 tabla-log"
                 aria-label="Tabla de auditoria" aria-describedby="descripcionTabla" id="driver-tabla">
                 <ng-container matColumnDef="MODIFICACION">
                   <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-tipo" id="driver-col-tipo">Tipo
                     de origen</th>
-                  <td mat-cell *matCellDef="let element" class="contenido-celda">{{ extraerDatosLog(element, 'tipo_log')
-                    }}</td>
+                  <td mat-cell *matCellDef="let element" class="contenido-celda">{{ extraerDatosLog(element, 'tipo_log') }}</td>
                 </ng-container>
                 <ng-container matColumnDef="FECHA">
                   <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-fecha" id="driver-col-fecha">
@@ -175,8 +186,42 @@
                 <ng-container matColumnDef="ROLES">
                   <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-rol" id="driver-col-rol">
                     Rol-responsable</th>
-                  <td mat-cell *matCellDef="let element" class="contenido-celda">{{ extraerDatosLog(element, 'usuario')
-                    }}</td>
+                  <td mat-cell *matCellDef="let element" class="contenido-celda">{{ extraerDatosLog(element, 'usuario') }}</td>
+                </ng-container>
+                <ng-container matColumnDef="ACCIONES">
+                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-acciones"
+                    id="driver-btn-detalle" id="driver-col-acciones">ACCIONES</th>
+                  <td mat-cell *matCellDef="let element" class="contenido-celda">
+                    <span>
+                      <div class="boton-acciones">
+                        <mat-icon class="icono-rojo" (click)="abrirDialogVerDetalleLogFiltrados(element)">visibility<span
+                            class="tooltip tooltip-bottom"></span>
+                        </mat-icon>
+                      </div>
+                    </span>
+                  </td>
+                </ng-container>
+                <tr mat-header-row class="titulo-tabla" *matHeaderRowDef="columnasBusqueda()"></tr>
+                <tr mat-row *matRowDef="let row; columns: columnasBusqueda();"></tr>
+              </table>
+              </ng-container>
+              <ng-template #backendTable>
+              <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 tabla-log"
+                aria-label="Tabla de auditoria" aria-describedby="descripcionTabla" id="driver-tabla">
+                <ng-container matColumnDef="MODIFICACION">
+                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-tipo" id="driver-col-tipo">Tipo
+                    de origen</th>
+                  <td mat-cell *matCellDef="let element" class="contenido-celda">{{ element.MODIFICACION }}</td>
+                </ng-container>
+                <ng-container matColumnDef="FECHA">
+                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-fecha" id="driver-col-fecha">
+                    Fecha</th>
+                  <td mat-cell *matCellDef="let element" class="contenido-celda">{{ element.FECHA }}</td>
+                </ng-container>
+                <ng-container matColumnDef="ROLES">
+                  <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-rol" id="driver-col-rol">
+                    Rol-responsable</th>
+                  <td mat-cell *matCellDef="let element" class="contenido-celda">{{ element.ROLES }}</td>
                 </ng-container>
                 <ng-container matColumnDef="ACCIONES">
                   <th mat-header-cell *matHeaderCellDef class="titulo-tabla" id="columna-acciones"
@@ -194,6 +239,7 @@
                 <tr mat-header-row class="titulo-tabla" *matHeaderRowDef="columnasBusqueda()"></tr>
                 <tr mat-row *matRowDef="let row; columns: columnasBusqueda();"></tr>
               </table>
+              </ng-template>
               <mat-paginator [pageSizeOptions]="[5, 10, 20, 50, 100]" showFirstLastButtons
                 id="driver-paginador"></mat-paginator>
             </ng-container>
