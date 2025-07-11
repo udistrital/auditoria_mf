@@ -1,6 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA,MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { driver } from 'driver.js';
+import { tutorialDetalle } from '../../tutorial';
 
 @Component({
   selector: 'app-ver-detalle-log-dialog',
@@ -21,7 +23,7 @@ export class VerDetalleLogDialogComponent {
       nombreResponsable: [this.data.NOMBRERESPONSABLE || ''],
       documentoResponsable: [this.data.DOCUMENTORESPONSABLE || ''],
       direccionAccion: [this.data.DIRECCIONACCION || ''],
-      tipoLog: [this.data.MODIFICACION || ''],
+      tipo_log: [this.data.MODIFICACION || ''],
       fechaEjecucion: [this.data.FECHA || ''],
       rol: [this.data.ROL || '']
     });
@@ -36,11 +38,20 @@ export class VerDetalleLogDialogComponent {
       tipoError: [this.data.TIPOERROR || ''],
       mensajeError: [this.data.MENSAJEERROR || '']
     });
-
-    console.log("data que llega:", this.data);
   }
 
   onCloseClick(){
     this.dialogRef.close();
+  }
+
+  startDetailTour() {
+    const driverObj = driver({
+      showProgress: true,
+      animate: true,
+      overlayColor: 'rgba(0, 0, 0, 0.7)',
+      steps: tutorialDetalle,
+    });
+
+    driverObj.drive();
   }
 }
