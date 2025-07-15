@@ -65,7 +65,7 @@ export class AuditoriaMidService {
       }
     });
     // Realizar la petición GET con los parámetros
-    return this.http.get(`${this.path}auditoria/buscarLogsFiltrados`, { params },)
+    return this.http.get(`${this.path}auditoria/buscarLogsFiltrados`, { headers:this.httpOptions.headers,params },)
   }
 
 }

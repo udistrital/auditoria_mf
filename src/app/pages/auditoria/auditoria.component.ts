@@ -102,7 +102,6 @@ export class AuditoriaComponent implements OnInit {
       pagina: 1,
       limite: 5000
     };
-    console.log(payload)
 
     const requiredFields = ['fechaInicio', 'horaInicio', 'fechaFin', 'horaFin', 'tipo_log', 'nombreApi', 'entornoApi'];
     const missingFields = requiredFields.filter(field => !payload[field]);
@@ -118,7 +117,6 @@ export class AuditoriaComponent implements OnInit {
     this.auditoriaMidService.buscarLogsFiltrados(payload)
       .subscribe({
         next: (response: any) => {
-          console.log('Respuesta de la API:', response);
           const logs = this.transformarRespuesta(response);
 
           if (!Array.isArray(logs)) {
