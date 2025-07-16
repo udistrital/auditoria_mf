@@ -195,11 +195,20 @@ input, select, textarea{
 }
 
 .driver-popover.driverjs-theme button {
+  &.driver-popover-prev-btn,&.driver-popover-next-btn{
+    background-color: #731514 !important;
+    border: 2px solid #731514 !important;
+  }
+  &.driver-popover-close-btn{
+    color: #731514 !important;
+    font-size: 1.3rem;
+    &:hover{
+      background-color: #ffffff !important;
+    }
+  }
   flex: 1;
   text-align: center;
-  background-color: #731514 !important;
   color: #ffffff;
-  border: 2px solid #731514 !important;
   text-shadow: none;
   font-size: 14px;
   padding: 5px 8px;
@@ -210,7 +219,6 @@ input, select, textarea{
   background-color: #3a0b0a !important;
   color: #ffffff;
 }
-
 .driver-popover.driverjs-theme .driver-popover-navigation-btns {
   justify-content: space-between;
   gap: 3px;
