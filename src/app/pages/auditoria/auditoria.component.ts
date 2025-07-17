@@ -66,6 +66,16 @@ export class AuditoriaComponent implements OnInit {
 
     window.dispatchEvent(new CustomEvent('clienteAuditoria', { detail: { appName: '@udistrital/auditoria-mf' } }));
   }
+  private convertirFechaHoraAEpoch(fecha: string, hora: string): number {
+    if (!fecha || !hora) return 0;
+    
+    // Combinar fecha y hora en formato ISO (YYYY-MM-DDTHH:MM:SS)
+    const fechaHoraString = `${fecha}T${hora}:00`;
+    const fechaHora = new Date(fechaHoraString);
+    
+    // Obtener timestamp en segundos (Unix Epoch)
+    return Math.floor(fechaHora.getTime() / 1000);
+  }
 
 
   buscarLogs(): void {
@@ -79,9 +89,9 @@ export class AuditoriaComponent implements OnInit {
     }
 
     const payload: { [key: string]: any } = {
-      fechaInicio: formValues.fechaDesde,
+      fechaInicio: this.convertirFechaHoraAEpoch(formValues.fechaDesde, formValues.horaDesde),//formValues.fechaDesde,
       horaInicio: formValues.horaDesde,
-      fechaFin: formValues.fechaHasta,
+      fechaFin: this.convertirFechaHoraAEpoch(formValues.fechaHasta, formValues.horaHasta),//formValues.fechaHasta,
       horaFin: formValues.horaHasta,
       tipo_log: formValues.tipo_log,
       codigoResponsable: formValues.codigoResponsable,
@@ -153,9 +163,9 @@ export class AuditoriaComponent implements OnInit {
     }
 
     const payload: { [key: string]: any } = {
-      fechaInicio: formValues.fechaDesde,
+      fechaInicio: this.convertirFechaHoraAEpoch(formValues.fechaDesde, formValues.horaDesde),//formValues.fechaDesde,
       horaInicio: formValues.horaDesde,
-      fechaFin: formValues.fechaHasta,
+      fechaFin: this.convertirFechaHoraAEpoch(formValues.fechaHasta, formValues.horaHasta),//formValues.fechaHasta,
       horaFin: formValues.horaHasta,
       tipo_log: formValues.tipo_log,
       codigoResponsable: formValues.codigoResponsable,

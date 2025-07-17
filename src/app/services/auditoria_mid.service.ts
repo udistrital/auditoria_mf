@@ -55,17 +55,7 @@ export class AuditoriaMidService {
    * @returns Observable con los logs filtrados.
    */
   buscarLogsFiltrados(payload: any): Observable<any> {
-    // Convertir el payload a HttpParams para GET
-    let params = new HttpParams();
-
-    // Mapear cada propiedad del payload a parámetros GET
-    Object.keys(payload).forEach(key => {
-      if (payload[key] !== null && payload[key] !== undefined && payload[key] !== '') {
-        params = params.append(key, payload[key]);
-      }
-    });
-    // Realizar la petición GET con los parámetros
-    return this.http.get(`${this.path}auditoria/buscarLogsFiltrados`, { headers:this.httpOptions.headers,params },)
+    return this.http.post(`${this.path}auditoria/buscarLogsFiltrados`,payload, { headers:this.httpOptions.headers },)
   }
 
 }
