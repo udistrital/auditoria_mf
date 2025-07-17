@@ -85,8 +85,24 @@ export const tutorialHome: DriveStep[] = [
     {
         element: '#driver-buscar-btn',
         popover: {
-            title: 'Buscar Registros',
-            description: 'Haz clic aquí para ejecutar la búsqueda con los filtros seleccionados.',
+            title: 'Busqueda Estandar',
+            description: `Haz clic aquí para ejecutar la búsqueda con los filtros seleccionados. 
+            Esta búsqueda tarda más debido a que implica la consulta de registros y el prosesamiento de la información
+            previa al envío de resultados al cliente (página web).
+            `,
+            side: 'top',
+            align: 'center'
+        }
+    },
+    {
+        element: '#driver-buscar-btn-flexible',
+        popover: {
+            title: 'Busqueda Flexible',
+            description: `Haz clic aquí para ejecutar la búsqueda con los filtros seleccionados. 
+            Esta búsqueda implica menor tiempo (dependiendo también de los recursos de los que disponga el equipo)
+            debido a que una vez obtenido los resultados, estos se envían en crudo para el procesamiendo de los registros
+            directamente desde el cliente (página web).
+            `,
             side: 'top',
             align: 'center'
         }
