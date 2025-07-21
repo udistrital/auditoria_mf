@@ -189,11 +189,6 @@ export class AuditoriaComponent implements OnInit {
     }
 
     this.auditoriaMidService.buscarLogsFiltrados(payload)
-      .pipe(
-        finalize(() => {
-          this.popUpManager.showSuccessAlert('Datos cargados con éxito');
-        })
-      )
       .subscribe({
         next: (response: any) => {
           if (response && response.Data) {
@@ -206,7 +201,11 @@ export class AuditoriaComponent implements OnInit {
               this.paginator.pageSize = 100;
             }
             this.dataSource.paginator = this.paginator;
-
+            if (response.Data.length > 0) {
+              this.popUpManager.showSuccessAlert('Datos cargados con éxito');
+            }else {
+              this.popUpManager.showErrorAlert('Error al buscar dependencias: Datos no disponibles');
+            }
           } else {
             this.popUpManager.showErrorAlert('No se encontraron registros');
           }
@@ -228,12 +227,10 @@ export class AuditoriaComponent implements OnInit {
       try {
         if (resultados.length > 0) {
           this.dataSource.data = resultados;
-          //setTimeout(() => {
           this.dataSource.paginator = this.paginator;
           this.popUpManager.showSuccessAlert('Datos cargados con éxito');
           resolve();
-          //}, 1000);
-        } else {
+        }else {
 
           this.popUpManager.showErrorAlert('Error al buscar dependencias: Datos no disponibles');
           resolve();
@@ -380,12 +377,11 @@ export class AuditoriaComponent implements OnInit {
   }
 
   exportToCSV(): void {
+    this.popUpManager.showLoaderAlert('Generando archivo CSV, por favor espere...');
     if (!this.dataSource || this.dataSource.data.length === 0) {
       this.popUpManager.showErrorAlert('No hay datos para exportar');
       return;
     }
-
-    this.popUpManager.showLoaderAlert('Generando archivo CSV, por favor espere...');
 
     try {
       // Procesar cada registro para extraer los datos necesarios
@@ -430,11 +426,15 @@ export class AuditoriaComponent implements OnInit {
       const csvContent = this.convertToCSV(exportData);
       this.downloadCSV(csvContent, `logs_auditoria_${new Date().toISOString().slice(0, 10)}.csv`);
       this.popUpManager.showSuccessAlert('Archivo CSV generado con éxito');
+      setTimeout(() => {
+        Swal.close();
+      }, 2500);
     } catch (error) {
       console.error('Error al exportar a CSV:', error);
       this.popUpManager.showErrorAlert('Error al generar el archivo CSV');
-    } finally {
-      Swal.close();
+      setTimeout(() => {
+        Swal.close();
+      }, 2500);
     }
   }
 
@@ -491,50 +491,6 @@ export class AuditoriaComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
-
-  exportToCSV3(): void {
-    if (!this.dataSource || this.dataSource.data.length === 0) {
-      this.popUpManager.showErrorAlert('No hay datos para exportar');
-      return;
-    }
-
-    this.popUpManager.showLoaderAlert('Generando archivo CSV, por favor espere...');
-    
-    try {
-      // Clonar los datos para no modificar el original
-      const exportData = this.dataSource.data.map(log => {
-        const clonedItem = {...log};
-        
-        // Formatear los campos JSON para mejor legibilidad
-        if (clonedItem.PETICIONREALIZADA) {
-          try {
-            clonedItem.PETICIONREALIZADA = this.formatJsonForCSV(clonedItem.PETICIONREALIZADA);
-          } catch (e) {
-            console.warn('No se pudo formatear PETICIONREALIZADA:', e);
-          }
-        }
-        
-        if (clonedItem.EVENTOBD) {
-          try {
-            clonedItem.EVENTOBD = this.formatJsonForCSV(clonedItem.EVENTOBD);
-          } catch (e) {
-            console.warn('No se pudo formatear EVENTOBD:', e);
-          }
-        }
-        
-        return clonedItem;
-      });
-
-      const csvContent = this.convertToCSV(exportData);
-      this.downloadCSV(csvContent, `logs_auditoria_${new Date().toISOString().slice(0, 10)}.csv`);
-      this.popUpManager.showSuccessAlert('Archivo CSV generado con éxito');
-    } catch (error) {
-      console.error('Error al exportar a CSV:', error);
-      this.popUpManager.showErrorAlert('Error al generar el archivo CSV');
-    } finally {
-      Swal.close();
-    }
   }
 
   private formatJsonForCSV(jsonString: string): string {
