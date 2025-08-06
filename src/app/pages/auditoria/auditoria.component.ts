@@ -16,7 +16,13 @@ import { tutorialHome } from './tutorial';
 import { InfoRootDetail, LogData } from 'src/app/helpers/interfaces/IAuditoria';
 import { environment } from 'src/environments/environment';
 import { fechaHastaMayorQueDesde } from 'src/app/helpers/validators/restriccion-fechas';
-
+interface ApiResponse {
+  end_point: string;
+  api: string;
+  metodo: string;
+  usuario: null | string;
+  data: string | object; // Puede ser string u objeto después de la transformación
+}
 @Component({
   selector: 'app-auditoria',
   templateUrl: './auditoria.component.html',
@@ -35,7 +41,7 @@ export class AuditoriaComponent implements OnInit {
   years: number[] = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
   logForm !: FormGroup;
   dataSource!: MatTableDataSource<LogData>;
-  typeSearch:string='';
+  typeSearch: string = '';
 
   constructor(public dialog: MatDialog, private fb: FormBuilder, private popUpManager: PopUpManager,
     private auditoriaMidService: AuditoriaMidService,) {
@@ -68,11 +74,11 @@ export class AuditoriaComponent implements OnInit {
   }
   private convertirFechaHoraAEpoch(fecha: string, hora: string): number {
     if (!fecha || !hora) return 0;
-    
+
     // Combinar fecha y hora en formato ISO (YYYY-MM-DDTHH:MM:SS)
     const fechaHoraString = `${fecha}T${hora}:00`;
     const fechaHora = new Date(fechaHoraString);
-    
+
     // Obtener timestamp en segundos (Unix Epoch)
     return Math.floor(fechaHora.getTime() / 1000);
   }
@@ -203,7 +209,7 @@ export class AuditoriaComponent implements OnInit {
             this.dataSource.paginator = this.paginator;
             if (response.Data.length > 0) {
               this.popUpManager.showSuccessAlert('Datos cargados con éxito');
-            }else {
+            } else {
               this.popUpManager.showErrorAlert('Error al buscar dependencias: Datos no disponibles');
             }
           } else {
@@ -230,7 +236,7 @@ export class AuditoriaComponent implements OnInit {
           this.dataSource.paginator = this.paginator;
           this.popUpManager.showSuccessAlert('Datos cargados con éxito');
           resolve();
-        }else {
+        } else {
 
           this.popUpManager.showErrorAlert('Error al buscar dependencias: Datos no disponibles');
           resolve();
@@ -240,14 +246,17 @@ export class AuditoriaComponent implements OnInit {
       }
     });
   }
+
   abrirDialogVerDetalleLog(element: any): void {
-      const dialogRef = this.dialog.open(VerDetalleLogDialogComponent, {
-        width: '85%',
-        height: 'auto',
-        maxHeight: '65vh',
-        data: element
-      });
-    }
+    console.log('Elemento seleccionado:', element);
+    const dialogRef = this.dialog.open(VerDetalleLogDialogComponent, {
+      width: '85%',
+      height: 'auto',
+      maxHeight: '65vh',
+      data: element
+    });
+    console.log(element)
+  }
 
   abrirDialogVerDetalleLogFiltrados(element: any): void {
     const dialogRef = this.dialog.open(VerDetalleLogDialogComponent, {
@@ -308,7 +317,7 @@ export class AuditoriaComponent implements OnInit {
         }
         return from(response.json());
       }),
-      tap(data => {}),
+      tap(data => { }),
       map(data => {
         if (data?.cliente?.api) {
           this.apisInfo = data.cliente.api.map((api: any) => {
@@ -345,25 +354,25 @@ export class AuditoriaComponent implements OnInit {
     }
   }
   private transformarRespuesta(response: any): LogData[] {
-      if (!response || !response.Data || !Array.isArray(response.Data)) {
-        return [];
-      }
-      return response.Data.map((log: any) => ({
-        MODIFICACION: log.tipo_log || 'Sin tipo',
-        FECHA: log.fecha || 'Sin fecha',
-        ROL: log.rolResponsable || 'Sin usuario',
-        ACCIONES: 'Ver',
-        ROLES: log.rol || 'Rol no encontrado',
-        NOMBRERESPONSABLE: log.nombreResponsable || 'Sin nombre',
-        DOCUMENTORESPONSABLE: log.documentoResponsable || 'Sin documento',
-        DIRECCIONACCION: log.direccionAccion || 'Sin direccion',
-        APISCONSUMEN: log.apisConsumen || 'Sin apis',
-        PETICIONREALIZADA: this.funcionFormateoLog(log.peticionRealizada || 'Sin peticion'),
-        EVENTOBD: log.eventoBD || 'Sin evento de la BD',
-        TIPOERROR: log.tipoError || 'Sin tipo de error',
-        MENSAJEERROR: log.mensajeError || 'Sin mensaje de error'
-      }));
+    if (!response || !response.Data || !Array.isArray(response.Data)) {
+      return [];
     }
+    return response.Data.map((log: any) => ({
+      MODIFICACION: log.tipo_log || 'Sin tipo',
+      FECHA: log.fecha || 'Sin fecha',
+      ROL: log.rolResponsable || 'Sin usuario',
+      ACCIONES: 'Ver',
+      ROLES: log.rol || 'Rol no encontrado',
+      NOMBRERESPONSABLE: log.nombreResponsable || 'Sin nombre',
+      DOCUMENTORESPONSABLE: log.documentoResponsable || 'Sin documento',
+      DIRECCIONACCION: log.direccionAccion || 'Sin direccion',
+      APISCONSUMEN: log.apisConsumen || 'Sin apis',
+      PETICIONREALIZADA: this.funcionFormateoLog(log.peticionRealizada || 'Sin peticion'),
+      EVENTOBD: log.eventoBD || 'Sin evento de la BD',
+      TIPOERROR: log.tipoError || 'Sin tipo de error',
+      MENSAJEERROR: log.mensajeError || 'Sin mensaje de error'
+    }));
+  }
 
   startTour() {
     const driverObj = driver({
@@ -386,7 +395,7 @@ export class AuditoriaComponent implements OnInit {
     try {
       // Procesar cada registro para extraer los datos necesarios
       const exportData = this.dataSource.data.map(log => {
-        if(this.typeSearch==='flexible'){
+        if (this.typeSearch === 'flexible') {
           return {
             MODIFICACION: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo',
             FECHA: this.extraerDatosLog(log, 'fecha') || 'Sin fecha',
@@ -400,8 +409,8 @@ export class AuditoriaComponent implements OnInit {
             TIPOERROR: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo de error',
             MENSAJEERROR: JSON.stringify(log) || 'Sin mensaje de error'
           };
-        }else{
-          const clonedItem = {...log};
+        } else {
+          const clonedItem = { ...log };
           // Formatear los campos JSON para mejor legibilidad
           if (clonedItem.PETICIONREALIZADA) {
             try {
@@ -453,7 +462,7 @@ export class AuditoriaComponent implements OnInit {
     data.forEach((item: any) => {
       const row = columns.map(col => {
         const value = item[col] || '';
-        if (this.typeSearch==='flexible') {
+        if (this.typeSearch === 'flexible') {
           if (typeof value === 'string') {
             // Limpiar formato JSON si es necesario
             if (col === 'PETICIONREALIZADA' || col === 'EVENTOBD') {
@@ -465,10 +474,10 @@ export class AuditoriaComponent implements OnInit {
               }
             }
             return `"${value.replace(/"/g, '""')}"`;
-          }else{
+          } else {
             return `"${String(value)}"`;
           }
-        }else{
+        } else {
           // Escapar comillas y saltos de línea para formato CSV
           return `"${String(value).replace(/"/g, '""')}"`;
         }
@@ -505,7 +514,272 @@ export class AuditoriaComponent implements OnInit {
     }
   }
 
-  extraerDatosLog(log: any, parametro: string) {
+  extraerDatosLog(log: any, parametro: string): any {
+    // Definimos los patrones de búsqueda para cada parámetro
+    const patrones: any = {
+      sql_orm: /sql_orm:\s\{(.*?)\},\s+ip_user:/,
+      host: /host: ([^,]*)/,
+      tipo_log: /\[([a-zA-Z0-9._-]+)(?=\.\w+:)/,
+      fecha: /\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}/,
+      usuario: /, user:\s([^\s,]+\s([a-zA-Z0-9._-]+))/, // Modificado para hacerlo más flexible
+      endpoint: /end_point:\s([^\s,]+)/,
+      metodo: /method: ([^,]*)/,
+      ip_user: /ip_user: ([^,]*)/,
+      user_agent: /user_agent:\s([^\s,]+)/,
+      app_name: /app_name: ([^,]*)/,
+      fecha_iso: /date: ([^,]*)/,
+      router_pattern: /RouterPattern":"([^"]*)"/,
+      apiConsumen: /app_name:\s([^\s,]+)/,
+      api: /host:\s([^\s,]+)/,
+      direccionAccion: /ip_user:\s([^\s,]+)/,
+      data: /data:\s({.*})/,
+    };
+
+    try {
+      switch (parametro) {
+        case 'sql_orm':
+          const matchSql = log.match(patrones.sql_orm);
+          return matchSql ? matchSql[1].trim() : null;
+
+        case 'host':
+          const matchHost = log.match(patrones.host);
+          return matchHost ? matchHost[1].trim() : null;
+
+        case 'tipo_log':
+          const matchTipo = log.match(patrones.tipo_log);
+          return matchTipo ? matchTipo[1] : null; // Agregada validación
+
+        case 'fecha':
+          const matchFecha = log.match(patrones.fecha);
+          return matchFecha ? matchFecha[0].trim() : null;
+
+        case 'peticion':
+          const data: any = {
+            end_point: this.extraerDatosLog(log, 'end_point') || '/',
+            api: this.extraerDatosLog(log, 'host'),
+            metodo: this.extraerDatosLog(log, 'metodo'),
+            usuario: this.extraerDatosLog(log, 'user'),
+            data:this.extraerDatosLog(log, 'data') ,
+          }
+          return data;
+
+        case 'data':
+          const matchData = log.match(patrones.data);
+          if (matchData && matchData[1]) {
+            try {
+              // Primero limpia el string
+              let dataStr = matchData[1].trim();
+
+              // Maneja casos donde el JSON está malformado
+              if (!dataStr.endsWith('}')) {
+                dataStr = dataStr.split('}')[0] + '}';
+              }
+
+              return this.parseNestedJson(this.cleanJsonString(dataStr));
+            } catch (e) {
+              console.error('Error procesando data:', e);
+              return null;
+            }
+          }
+          return null;
+
+        case 'user':
+          const matchUser = log.match(patrones.usuario);
+          return matchUser && matchUser[1] ? matchUser[1].trim() : null;
+
+        case 'usuario':
+          const matchUsuario = log.match(patrones.usuario);
+          let usuario = matchUsuario && matchUsuario[1] ? matchUsuario[1].trim() : "";
+
+          // Si no se encontró usuario con el patrón principal, intenta con un patrón alternativo
+          if (!usuario) {
+            const altPattern = /user: ([^,\s]+)/;
+            const altMatch = log.match(altPattern);
+            usuario = altMatch && altMatch[1] ? altMatch[1].trim() : "";
+          }
+
+          const INVALIDOS = ["N/A", "Error", "Error WSO2", "", "null", undefined, null];
+
+          if (!INVALIDOS.includes(usuario)) {
+            usuario += "@udistrital.edu.co";
+          } else {
+            usuario = "Error WSO2 - Sin usuario";
+          }
+
+          return usuario;
+
+        default:
+          if (patrones[parametro]) {
+            const match = log.match(patrones[parametro]);
+            return match ? match[1].trim() : null;
+          }
+          return null;
+      }
+    } catch (e) {
+      console.error(`Error al procesar el log para ${parametro}:`, e);
+      return null;
+    }
+  }
+
+  cleanJsonString(jsonString: string): any {
+    if (!jsonString || typeof jsonString !== 'string') {
+      return jsonString;
+    }
+
+    // Limpieza inicial del string
+    let cleanStr = jsonString.trim();
+
+    // Elimina caracteres no imprimibles excepto tabulaciones y saltos de línea que podrían estar en JSON válido
+    cleanStr = cleanStr.replace(/[\x00-\x09\x0B-\x0C\x0E-\x1F\x7F]/g, '');
+
+    // Intenta encontrar el JSON válido más interno
+    const extractValidJson = (str: string): string | null => {
+      let openBrackets = 0;
+      let startIndex = -1;
+
+      for (let i = 0; i < str.length; i++) {
+        if (str[i] === '{' || str[i] === '[') {
+          if (openBrackets === 0) {
+            startIndex = i;
+          }
+          openBrackets++;
+        } else if (str[i] === '}' || str[i] === ']') {
+          openBrackets--;
+          if (openBrackets === 0 && startIndex !== -1) {
+            // Verifica si lo que sigue es solo whitespace o nada
+            const remaining = str.slice(i + 1).trim();
+            if (remaining === '' || /^[,:]?\s*$/.test(remaining)) {
+              return str.slice(startIndex, i + 1);
+            }
+          }
+        }
+      }
+      return null;
+    };
+
+    const validJson = extractValidJson(cleanStr);
+    if (validJson) {
+      cleanStr = validJson;
+    } else {
+      // Si no encontramos JSON válido, intentamos el parseo directo como último recurso
+      try {
+        return JSON.parse(cleanStr);
+      } catch {
+        return cleanStr;
+      }
+    }
+
+    try {
+      let parsedData = JSON.parse(cleanStr);
+
+      // Función recursiva para limpiar y parsear strings anidados
+      const deepParse = (obj: any): any => {
+        if (typeof obj === 'string') {
+          // Verifica si el string podría ser un JSON
+          const trimmed = obj.trim();
+          if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+            try {
+              const nestedJson = extractValidJson(trimmed) || trimmed;
+              const parsed = JSON.parse(nestedJson);
+              return deepParse(parsed);
+            } catch {
+              return obj;
+            }
+          }
+          return obj;
+        } else if (Array.isArray(obj)) {
+          return obj.map(item => deepParse(item));
+        } else if (typeof obj === 'object' && obj !== null) {
+          const result: any = {};
+          for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              result[key] = deepParse(obj[key]);
+            }
+          }
+          return result;
+        }
+        return obj;
+      };
+
+      return deepParse(parsedData);
+    } catch (error) {
+      console.error('Error al parsear JSON:', error, 'String:', cleanStr);
+      return cleanStr;
+    }
+  }
+  parseNestedJson(response: ApiResponse): ApiResponse {
+  if (typeof response.data === 'string') {
+    try {
+      // Parseamos el string JSON principal
+      const parsedData = JSON.parse(response.data);
+      
+      // Función recursiva para parsear strings anidados que puedan ser JSON
+      const deepParse = (obj: any): any => {
+        if (typeof obj === 'string') {
+          try {
+            // Intenta parsear si parece JSON
+            const trimmed = obj.trim();
+            if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
+                (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+              return deepParse(JSON.parse(trimmed));
+            }
+            return obj;
+          } catch {
+            return obj;
+          }
+        } else if (Array.isArray(obj)) {
+          return obj.map(item => deepParse(item));
+        } else if (typeof obj === 'object' && obj !== null) {
+          const result: any = {};
+          for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              result[key] = deepParse(obj[key]);
+            }
+          }
+          return result;
+        }
+        return obj;
+      };
+
+      // Aplicamos el parseo profundo
+      return {
+        ...response,
+        data: deepParse(parsedData)
+      };
+    } catch (error) {
+      console.error('Error parsing data:', error);
+      return response; // Devolvemos el original si hay error
+    }
+  }
+  return response; // Si ya es objeto, lo devolvemos tal cual
+}
+  private parseRecursiveJson(jsonString: string): any {
+    try {
+      // Intenta parsear directamente
+      const parsed = JSON.parse(jsonString);
+
+      // Si el resultado es un objeto, revisamos sus propiedades
+      if (typeof parsed === 'object' && parsed !== null) {
+        for (const key in parsed) {
+          if (typeof parsed[key] === 'string') {
+            try {
+              // Si una propiedad es string, intentamos parsearla
+              parsed[key] = this.parseRecursiveJson(parsed[key]);
+            } catch (e) {
+              // Si falla, dejamos el string original
+            }
+          }
+        }
+      }
+
+      return parsed;
+    } catch (e) {
+      // Si no es JSON válido, devolvemos el string original
+      return jsonString;
+    }
+  }
+  extraerDatosLog01(log: any, parametro: string) {
     // Definimos los patrones de búsqueda para cada parámetro
     const patrones: any = {
       sql_orm: /sql_orm:\s\{(.*?)\},\s+ip_user:/,

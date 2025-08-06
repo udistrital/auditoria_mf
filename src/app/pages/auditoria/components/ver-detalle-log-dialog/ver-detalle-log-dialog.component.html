@@ -22,7 +22,7 @@
                                     <div class="left-column">
                                         <div class="field-container" id="driver-name-field">
                                             <p class="nombre-input">Nombre Responsable: *</p>
-                                            <input type="text" formControlName="nombreResponsable"
+                                            <input type="text" formControlName="nombre_responsable	"
                                                 id="driver-name-input">
                                         </div>
                                         <div class="field-container" id="driver-doc-field">
@@ -67,10 +67,12 @@
                                     <p class="nombre-input" id="driver-request-label">PETICIÓN REALIZADA:</p>
                                     <textarea formControlName="peticionRealizada" class="textareaNivelDos"
                                         id="driver-request-textarea"></textarea>
+                                    <pre class="json-display" [innerText]="dataLogForm.get('peticionRealizada')?.value"></pre>
                                     <p class="nombre-input" id="driver-db-label">EVENTO EJECUTADO EN LA BASE DE DATOS:
                                     </p>
                                     <textarea formControlName="eventoBD" class="textareaNivelDos"
                                         id="driver-db-textarea"></textarea>
+                                    <!--<pre class="sql-display" [innerText]="buildDirectSqlQuery(dataLogForm.get('eventoBD')?.value)"></pre>-->
                                 </div>
                             </form>
                         </mat-card-content>

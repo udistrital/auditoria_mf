@@ -86,6 +86,10 @@
         },
         "serve": {
           "builder": "@angular-builders/custom-webpack:dev-server",
+          "options": {
+            "browserTarget": "auditoria-mf:build",
+            "buildTarget": "auditoria-mf:build"
+          },
           "configurations": {
             "production": {
               "browserTarget": "auditoria-mf:build:production"
