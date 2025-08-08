@@ -95,9 +95,9 @@ export class AuditoriaComponent implements OnInit {
     }
 
     const payload: { [key: string]: any } = {
-      fechaInicio: this.convertirFechaHoraAEpoch(formValues.fechaDesde, formValues.horaDesde),//formValues.fechaDesde,
+      fechaInicio: this.convertirFechaHoraAEpoch(formValues.fechaDesde, formValues.horaDesde),
       horaInicio: formValues.horaDesde,
-      fechaFin: this.convertirFechaHoraAEpoch(formValues.fechaHasta, formValues.horaHasta),//formValues.fechaHasta,
+      fechaFin: this.convertirFechaHoraAEpoch(formValues.fechaHasta, formValues.horaHasta),
       horaFin: formValues.horaHasta,
       tipo_log: formValues.tipo_log,
       codigoResponsable: formValues.codigoResponsable,
@@ -360,17 +360,17 @@ export class AuditoriaComponent implements OnInit {
     return response.Data.map((log: any) => ({
       MODIFICACION: log.tipo_log || 'Sin tipo',
       FECHA: log.fecha || 'Sin fecha',
-      ROL: log.rolResponsable || 'Sin usuario',
+      ROL: log.rol_responsable || 'Sin usuario',
       ACCIONES: 'Ver',
       ROLES: log.rol || 'Rol no encontrado',
-      NOMBRERESPONSABLE: log.nombreResponsable || 'Sin nombre',
-      DOCUMENTORESPONSABLE: log.documentoResponsable || 'Sin documento',
-      DIRECCIONACCION: log.direccionAccion || 'Sin direccion',
-      APISCONSUMEN: log.apisConsumen || 'Sin apis',
-      PETICIONREALIZADA: this.funcionFormateoLog(log.peticionRealizada || 'Sin peticion'),
-      EVENTOBD: log.eventoBD || 'Sin evento de la BD',
-      TIPOERROR: log.tipoError || 'Sin tipo de error',
-      MENSAJEERROR: log.mensajeError || 'Sin mensaje de error'
+      NOMBRERESPONSABLE: log.nombre_responsable || 'Sin nombre',
+      DOCUMENTORESPONSABLE: log.documento_responsable	|| 'Sin documento',
+      DIRECCIONACCION: log.direccion_accion	 || 'Sin direccion',
+      APISCONSUMEN: log.apis_consumen	 || 'Sin apis',
+      PETICIONREALIZADA: this.funcionFormateoLog(log.peticion_realizada	|| 'Sin peticion'),
+      EVENTOBD: log.evento_bd	|| 'Sin evento de la BD',
+      TIPOERROR: log.tipo_error || 'Sin tipo de error',
+      MENSAJEERROR: log.mensaje_error	 || 'Sin mensaje de error'
     }));
   }
 
@@ -563,7 +563,7 @@ export class AuditoriaComponent implements OnInit {
           }
           return data;
 
-        case 'data':
+        /*case 'data':
           const matchData = log.match(patrones.data);
           if (matchData && matchData[1]) {
             try {
@@ -582,7 +582,7 @@ export class AuditoriaComponent implements OnInit {
             }
           }
           return null;
-
+*/
         case 'user':
           const matchUser = log.match(patrones.usuario);
           return matchUser && matchUser[1] ? matchUser[1].trim() : null;
