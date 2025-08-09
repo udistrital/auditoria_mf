@@ -30,7 +30,7 @@ export class VerDetalleLogDialogComponent {
 
     this.dataLogForm = this.fb.group({
       apiConsume: [this.data.APISCONSUMEN || ''],
-      peticionRealizada: [this.data.PETICIONREALIZADA || '' || ''],
+      peticionRealizada: [this.formatForDisplay(this.data.PETICIONREALIZADA) || '' || ''],
       eventoBD: [this.data.EVENTOBD || '']
     });
 
