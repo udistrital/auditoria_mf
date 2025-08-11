@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { importProvidersFrom, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -19,7 +19,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { VerDetalleLogDialogComponent } from './pages/auditoria/components/ver-detalle-log-dialog/ver-detalle-log-dialog.component';
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpClient, HttpClientModule, provideHttpClient, withInterceptorsFromDi, withXsrfConfiguration } from '@angular/common/http';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 //import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core/dist/index.js';
 //import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -27,30 +27,43 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 /*export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, environment.apiUrl + 'assets/i18n/', '.json');
 }*/
+import { HttpClientXsrfModule } from '@angular/common/http';
 
-@NgModule({ declarations: [
-        AppComponent,
-        AuditoriaComponent,
-        VerDetalleLogDialogComponent,
-    ],
-    bootstrap: [AppComponent], imports: [FormsModule,
-        BrowserModule,
-        AppRoutingModule,
-        MatCardModule,
-        MatFormFieldModule,
-        MatDividerModule,
-        ReactiveFormsModule,
-        MatSelectModule,
-        MatPaginatorModule,
-        MatTableModule,
-        MatIconModule,
-        MatNativeDateModule,
-        MatDatepickerModule,
-        MatInputModule,
-        MatSnackBarModule,
-        MatDialogModule,
-        BrowserAnimationsModule], providers: [
-        AuditoriaMidService,
-        provideHttpClient(withInterceptorsFromDi()),
-    ] })
+@NgModule({
+  declarations: [
+      AppComponent,
+      AuditoriaComponent,
+      VerDetalleLogDialogComponent,
+  ],
+  bootstrap: [AppComponent],
+  imports: [
+    FormsModule,
+    BrowserModule,
+    AppRoutingModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatDividerModule,
+    ReactiveFormsModule,
+    MatSelectModule,
+    MatPaginatorModule,
+    MatTableModule,
+    MatIconModule,
+    MatNativeDateModule,
+    MatDatepickerModule,
+    MatInputModule,
+    MatSnackBarModule,
+    MatDialogModule,
+    BrowserAnimationsModule,
+  ],
+  providers: [
+      AuditoriaMidService,
+      provideHttpClient(
+        withInterceptorsFromDi(),
+        withXsrfConfiguration({
+          cookieName: 'XSRF-TOKEN',
+          headerName: 'X-XSRF-TOKEN'
+        })
+      )
+  ]
+})
 export class AppModule { }

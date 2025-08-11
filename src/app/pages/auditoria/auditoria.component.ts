@@ -70,7 +70,6 @@ export class AuditoriaComponent implements OnInit {
         }
       }
     });
-
     window.dispatchEvent(new CustomEvent('clienteAuditoria', { detail: { appName: '@udistrital/auditoria-mf' } }));
   }
   private convertirFechaHoraAEpoch(fecha: string, hora: string): number {
