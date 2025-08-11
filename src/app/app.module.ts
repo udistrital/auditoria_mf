@@ -19,7 +19,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { VerDetalleLogDialogComponent } from './pages/auditoria/components/ver-detalle-log-dialog/ver-detalle-log-dialog.component';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 //import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core/dist/index.js';
 //import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -28,35 +28,29 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
   return new TranslateHttpLoader(http, environment.apiUrl + 'assets/i18n/', '.json');
 }*/
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    AuditoriaComponent,
-    VerDetalleLogDialogComponent,
-  ],
-  imports: [
-    FormsModule,
-    BrowserModule,
-    AppRoutingModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatDividerModule,
-    ReactiveFormsModule,
-    MatSelectModule,
-    MatPaginatorModule,
-    MatTableModule,
-    MatIconModule,
-    MatNativeDateModule,
-    MatDatepickerModule,
-    MatInputModule,
-    MatSnackBarModule,
-    MatDialogModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
-  ],
-  providers: [
-    AuditoriaMidService,
-  ],
-  bootstrap: [AppComponent]
-})
+@NgModule({ declarations: [
+        AppComponent,
+        AuditoriaComponent,
+        VerDetalleLogDialogComponent,
+    ],
+    bootstrap: [AppComponent], imports: [FormsModule,
+        BrowserModule,
+        AppRoutingModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatDividerModule,
+        ReactiveFormsModule,
+        MatSelectModule,
+        MatPaginatorModule,
+        MatTableModule,
+        MatIconModule,
+        MatNativeDateModule,
+        MatDatepickerModule,
+        MatInputModule,
+        MatSnackBarModule,
+        MatDialogModule,
+        BrowserAnimationsModule], providers: [
+        AuditoriaMidService,
+        provideHttpClient(withInterceptorsFromDi()),
+    ] })
 export class AppModule { }
