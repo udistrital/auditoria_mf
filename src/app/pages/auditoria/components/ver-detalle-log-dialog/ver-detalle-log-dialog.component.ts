@@ -5,9 +5,10 @@ import { driver } from 'driver.js';
 import { tutorialDetalle } from '../../tutorial';
 
 @Component({
-  selector: 'app-ver-detalle-log-dialog',
-  templateUrl: './ver-detalle-log-dialog.component.html',
-  styleUrls: ['./ver-detalle-log-dialog.component.css']
+    selector: 'app-ver-detalle-log-dialog',
+    templateUrl: './ver-detalle-log-dialog.component.html',
+    styleUrls: ['./ver-detalle-log-dialog.component.css'],
+    standalone: false
 })
 export class VerDetalleLogDialogComponent {
   detallesLogForm !: FormGroup;

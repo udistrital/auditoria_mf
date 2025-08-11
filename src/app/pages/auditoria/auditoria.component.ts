@@ -24,9 +24,10 @@ interface ApiResponse {
   data: string | object; // Puede ser string u objeto después de la transformación
 }
 @Component({
-  selector: 'app-auditoria',
-  templateUrl: './auditoria.component.html',
-  styleUrls: ['./auditoria.component.css']
+    selector: 'app-auditoria',
+    templateUrl: './auditoria.component.html',
+    styleUrls: ['./auditoria.component.css'],
+    standalone: false
 })
 export class AuditoriaComponent implements OnInit {
   @ViewChild(MatPaginator) paginator !: MatPaginator;
