@@ -26,6 +26,7 @@ export class AuditoriaMidService {
 
   buildHeader() {
     const access_token = window.localStorage.getItem('access_token');
+    const csrfToken = this.getCookie('XSRF-TOKEN');
     if (access_token !== null) {
       this.httpOptions = {
         headers: new HttpHeaders({
@@ -55,6 +56,13 @@ export class AuditoriaMidService {
     return this.requestManager.delete(endpoint, element.Id);
   }
 
+  private getCookie(name: string): string {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || '';
+    return '';
+  }
+
   /**
    * # Buscar logs filtrados según el payload proporcionado.
    * Método para buscar logs filtrados según el payload proporcionado.
@@ -62,7 +70,7 @@ export class AuditoriaMidService {
    * @returns Observable con los logs filtrados.
    */
   buscarLogsFiltrados(payload: any): Observable<any> {
-    console.log(this.httpOptions.headers)
+    this.buildHeader();
     return this.http.post(`${this.path}auditoria/buscarLogsFiltrados`,payload, this.httpOptions)
   }
   /**
