@@ -26,7 +26,8 @@ interface ApiResponse {
 @Component({
   selector: 'app-auditoria',
   templateUrl: './auditoria.component.html',
-  styleUrls: ['./auditoria.component.css']
+  styleUrls: ['./auditoria.component.css'],
+  standalone:false,
 })
 export class AuditoriaComponent implements OnInit {
   @ViewChild(MatPaginator) paginator !: MatPaginator;

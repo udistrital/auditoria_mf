@@ -16,10 +16,14 @@ export class AuditoriaMidService {
   public httpOptions: any;
   service:string ='AUDITORIA_MID_SERVICE';
   dataSource!: MatTableDataSource<LogData>;
+  token: string = '';
 
   constructor(private requestManager: RequestManager, private http: HttpClient, private popUpManager: PopUpManager, private errManager: HttpErrorManager) {
     this.requestManager.setPath('AUDITORIA_MID_SERVICE');
     this.path = environment[this.service as keyof typeof environment]
+    this.buildHeader();
+  }
+  buildHeader() {
     const access_token = window.localStorage.getItem('access_token');
         if (access_token !== null) {
           this.httpOptions = {
@@ -30,6 +34,16 @@ export class AuditoriaMidService {
             }),
           };
         }
+    if (access_token !== null) {
+      this.httpOptions = {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${access_token}`,
+          'Accept': 'application/json',
+        }),
+        withCredentials: true,
+      };
+    }
   }
 
   get(endpoint: any) {
@@ -55,7 +69,8 @@ export class AuditoriaMidService {
    * @returns Observable con los logs filtrados.
    */
   buscarLogsFiltrados(payload: any): Observable<any> {
-    return this.http.post(`${this.path}auditoria/buscarLogsFiltrados`,payload, { headers:this.httpOptions.headers },)
+    this.buildHeader();
+    return this.http.post(`${this.path}auditoria/buscarLogsFiltrados`,payload, this.httpOptions)
   }
 
 }

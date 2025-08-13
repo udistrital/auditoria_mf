@@ -88,13 +88,13 @@
           "builder": "@angular-builders/custom-webpack:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "auditoria-mf:build:production"
+              "buildTarget": "auditoria-mf:build:production"
             },
             "development": {
-              "browserTarget": "auditoria-mf:build:development"
+              "buildTarget": "auditoria-mf:build:development"
             },
             "local": {
-              "browserTarget": "auditoria-mf:build:local"
+              "buildTarget": "auditoria-mf:build:local"
             }
           },
           "defaultConfiguration": "local"

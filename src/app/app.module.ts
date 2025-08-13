@@ -19,7 +19,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { VerDetalleLogDialogComponent } from './pages/auditoria/components/ver-detalle-log-dialog/ver-detalle-log-dialog.component';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule, provideHttpClient, withInterceptorsFromDi, withXsrfConfiguration } from '@angular/common/http';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 //import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core/dist/index.js';
 //import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -56,6 +56,13 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
   ],
   providers: [
     AuditoriaMidService,
+      provideHttpClient(
+        withInterceptorsFromDi(),
+        withXsrfConfiguration({
+          cookieName: 'XSRF-TOKEN',
+          headerName: 'X-XSRF-TOKEN'
+        })
+      )
   ],
   bootstrap: [AppComponent]
 })
