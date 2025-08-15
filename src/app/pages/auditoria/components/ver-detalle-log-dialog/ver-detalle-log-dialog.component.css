@@ -161,4 +161,6 @@
   max-height: 300px;
   overflow-y: auto;
   margin: 10px 0;
+  font-size: 0.9em;
+  line-height: 1.5;
 }

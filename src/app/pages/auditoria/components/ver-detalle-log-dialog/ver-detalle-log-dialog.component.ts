@@ -84,24 +84,73 @@ export class VerDetalleLogDialogComponent {
       return jsonString;
     }
   }
-  private formatForDisplay(data: any): string {
-    try {
-      const parsed = this.safeJsonParse(data);
-      return JSON.stringify(parsed, (key, value) => {
-        if (key === 'data' && typeof value === 'string') {
-          try {
-            return JSON.parse(value);
-          } catch {
-            return value;
-          }
-        }
-        return value;
-      }, 2);
-    } catch (e) {
-      return typeof data === 'string' ? data : JSON.stringify(data);
-    }
-  }
+  private formatDataField(data: string): any {
+  try {
+    // Si ya es un objeto, lo devolvemos directamente
+    if (typeof data === 'object') return data;
+    
+    // Limpieza inicial del string
+    let cleanStr = data
+      .trim()
+      .replace(/^\(|\)$/g, '')  // Elimina paréntesis al inicio/final
+      .replace(/\\"/g, '"')     // Reemplaza \" por "
+      .replace(/\\n/g, '')      // Elimina saltos de línea escapados
+      .replace(/\\t/g, '')      // Elimina tabulaciones escapadas
+      .replace(/^"|"$/g, '');   // Elimina comillas al inicio y final
 
+    // Corrección de problemas específicos en el string
+    cleanStr = cleanStr
+      .replace(/"RouterPattern":/g, '{"RouterPattern":')  // Añade llave inicial
+      .replace(/"Success":true}}/g, '"Success":true}}"}') // Añade llave final y comilla
+      .replace(/"Registration successfully,/g, '"Registration successfully",') // Arregla comillas faltantes
+      .replace(/0001-01-01700:00:002/g, '0001-01-01T00:00:00Z') // Corrige formato de fecha
+      .replace(/\\/g, '');      // Elimina barras invertidas residuales
+
+    // Intenta parsear el JSON limpio
+    return JSON.parse(cleanStr);
+  } catch (e) {
+    console.error('Error al formatear el campo data:', e);
+    // Si falla, intentamos una estrategia más agresiva
+    return this.extractJsonFromString(data) || data;
+  }
+}
+
+private extractJsonFromString(str: string): any {
+  // Busca el primer { y el último } para extraer el posible JSON
+  const firstBrace = str.indexOf('{');
+  const lastBrace = str.lastIndexOf('}');
+  
+  if (firstBrace === -1 || lastBrace === -1) return null;
+  
+  try {
+    const possibleJson = str.substring(firstBrace, lastBrace + 1);
+    return JSON.parse(possibleJson
+      .replace(/\\"/g, '"')
+      .replace(/"([^"]+)":/g, '"$1":') // Normaliza las claves
+      .replace(/'/g, '"') // Reemplaza comillas simples
+    );
+  } catch (e) {
+    console.error('No se pudo extraer JSON:', e);
+    return null;
+  }
+}
+private formatForDisplay(data: any): string {
+  try {
+    // Caso especial para el campo 'data'
+    if (typeof data === 'string' && data.includes('RouterPattern')) {
+      const formattedData = this.formatDataField(data);
+      return JSON.stringify(formattedData, null, 2);
+    }
+    
+    // Intento de parseo estándar
+    const parsed = typeof data === 'string' ? 
+                 this.safeJsonParse(data) : data;
+    return JSON.stringify(parsed, null, 2);
+  } catch (e) {
+    console.error('Error al formatear para visualización:', e);
+    return typeof data === 'string' ? data : JSON.stringify(data);
+  }
+}
   private formatJsonForDisplay(jsonString: string | object): string {
     try {
       // Si ya es un objeto, lo convertimos directamente
