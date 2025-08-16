@@ -27,10 +27,15 @@ export class VerDetalleLogDialogComponent {
       fechaEjecucion: [this.data.FECHA || ''],
       rol: [this.data.ROL || '']
     });
-
+    let safeLogString = (this.data.MENSAJEERROR).toString().replace(/`/g, "\\`");
+    const parsed = this.extractDataObject(JSON.stringify(safeLogString));
+    console.log(safeLogString)
+    console.log(parsed)
+    const highlighted = this.syntaxHighlight(parsed);
+    console.log(highlighted)
     this.dataLogForm = this.fb.group({
       apiConsume: [this.data.APISCONSUMEN || ''],
-      peticionRealizada: [this.formatForDisplay(this.data.PETICIONREALIZADA) || '' || ''],
+      peticionRealizada: [this.data.PETICIONREALIZADA || highlighted || ''],
       eventoBD: [this.data.EVENTOBD || '']
     });
 
@@ -54,103 +59,94 @@ export class VerDetalleLogDialogComponent {
 
     driverObj.drive();
   }
-  private safeJsonParse(jsonString: string | object): any {
-    if (typeof jsonString === 'object') return jsonString;
 
+  private extractDataObject(logString: string) {
     try {
-      // Limpieza básica del string
-      let cleanStr = jsonString.replace(/\\"/g, '"')
-        .replace(/\\n/g, '')
-        .replace(/\\t/g, '');
+      if (logString.trim().startsWith("data:")) {
+        const jsonString = logString.trim().substring(5).trim();
+        return JSON.parse(jsonString);
+      }
+      const dataIndex = logString.indexOf("data:");
+      if (dataIndex === -1) return null;
 
-      // Corrige JSON malformado
-      if (!cleanStr.startsWith('{') && !cleanStr.startsWith('[')) {
-        const jsonStart = cleanStr.indexOf('{');
-        if (jsonStart > -1) {
-          cleanStr = cleanStr.substring(jsonStart);
+      const dataSubstring = logString.substring(dataIndex + 5).trim();
+
+      const firstBrace = dataSubstring.indexOf("{");
+      if (firstBrace === -1) return null;
+
+      let openBraces = 0;
+      let endIndex = -1;
+
+      for (let i = firstBrace; i < dataSubstring.length; i++) {
+        if (dataSubstring[i] === "{") {
+          openBraces++;
+        } else if (dataSubstring[i] === "}") {
+          openBraces--;
+          if (openBraces === 0) {
+            endIndex = i + 1; // cortar aquí
+            break;
+          }
         }
       }
 
-      if (!cleanStr.endsWith('}') && !cleanStr.endsWith(']')) {
-        const jsonEnd = cleanStr.lastIndexOf('}');
-        if (jsonEnd > -1) {
-          cleanStr = cleanStr.substring(0, jsonEnd + 1);
+      if (endIndex === -1) return null;
+
+      let jsonLike = dataSubstring.substring(firstBrace, endIndex);
+
+      // Limpiar comillas escapadas
+      jsonLike = jsonLike.replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\');
+      const dataObject = JSON.parse(jsonLike);
+      
+      this.deepFix(dataObject);
+      return dataObject;
+    } catch (error) {
+      console.error("Error al parsear el objeto data:", error);
+      return null;
+    }
+  }
+
+  private syntaxHighlight(json: any) {
+    if (typeof json != 'string') {
+      json = JSON.stringify(json, undefined, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match: any) {
+      let cls = 'number';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'key';
+        } else {
+          cls = 'string';
         }
+      } else if (/true|false/.test(match)) {
+        cls = 'boolean';
+      } else if (/null/.test(match)) {
+        cls = 'null';
       }
+      return '<span class="' + cls + '">' + match + '</span>';
+    });
+  }
 
-      return JSON.parse(cleanStr);
-    } catch (e) {
-      console.error('Error parseando JSON:', e);
-      return jsonString;
+  private deepFix(obj:any) {
+    for (let key in obj) {
+      if (typeof obj[key] === "string") {
+        // Si parece JSON (empieza con { o [ )
+        if (obj[key].startsWith("{") || obj[key].startsWith("[")) {
+          try {
+            obj[key] = JSON.parse(obj[key]);
+            // Si el parseo fue exitoso, corregir recursivamente
+            this.deepFix(obj[key]);
+          } catch (e) {
+            // no era JSON válido, lo dejamos como string
+          }
+        }
+      } else if (typeof obj[key] === "object" && obj[key] !== null) {
+        this.deepFix(obj[key]);
+      }
     }
   }
-  private formatDataField(data: string): any {
-  try {
-    // Si ya es un objeto, lo devolvemos directamente
-    if (typeof data === 'object') return data;
-    
-    // Limpieza inicial del string
-    let cleanStr = data
-      .trim()
-      .replace(/^\(|\)$/g, '')  // Elimina paréntesis al inicio/final
-      .replace(/\\"/g, '"')     // Reemplaza \" por "
-      .replace(/\\n/g, '')      // Elimina saltos de línea escapados
-      .replace(/\\t/g, '')      // Elimina tabulaciones escapadas
-      .replace(/^"|"$/g, '');   // Elimina comillas al inicio y final
 
-    // Corrección de problemas específicos en el string
-    cleanStr = cleanStr
-      .replace(/"RouterPattern":/g, '{"RouterPattern":')  // Añade llave inicial
-      .replace(/"Success":true}}/g, '"Success":true}}"}') // Añade llave final y comilla
-      .replace(/"Registration successfully,/g, '"Registration successfully",') // Arregla comillas faltantes
-      .replace(/0001-01-01700:00:002/g, '0001-01-01T00:00:00Z') // Corrige formato de fecha
-      .replace(/\\/g, '');      // Elimina barras invertidas residuales
-
-    // Intenta parsear el JSON limpio
-    return JSON.parse(cleanStr);
-  } catch (e) {
-    console.error('Error al formatear el campo data:', e);
-    // Si falla, intentamos una estrategia más agresiva
-    return this.extractJsonFromString(data) || data;
-  }
-}
-
-private extractJsonFromString(str: string): any {
-  // Busca el primer { y el último } para extraer el posible JSON
-  const firstBrace = str.indexOf('{');
-  const lastBrace = str.lastIndexOf('}');
-  
-  if (firstBrace === -1 || lastBrace === -1) return null;
-  
-  try {
-    const possibleJson = str.substring(firstBrace, lastBrace + 1);
-    return JSON.parse(possibleJson
-      .replace(/\\"/g, '"')
-      .replace(/"([^"]+)":/g, '"$1":') // Normaliza las claves
-      .replace(/'/g, '"') // Reemplaza comillas simples
-    );
-  } catch (e) {
-    console.error('No se pudo extraer JSON:', e);
-    return null;
-  }
-}
-private formatForDisplay(data: any): string {
-  try {
-    // Caso especial para el campo 'data'
-    if (typeof data === 'string' && data.includes('RouterPattern')) {
-      const formattedData = this.formatDataField(data);
-      return JSON.stringify(formattedData, null, 2);
-    }
-    
-    // Intento de parseo estándar
-    const parsed = typeof data === 'string' ? 
-                 this.safeJsonParse(data) : data;
-    return JSON.stringify(parsed, null, 2);
-  } catch (e) {
-    console.error('Error al formatear para visualización:', e);
-    return typeof data === 'string' ? data : JSON.stringify(data);
-  }
-}
   private formatJsonForDisplay(jsonString: string | object): string {
     try {
       // Si ya es un objeto, lo convertimos directamente
@@ -218,13 +214,13 @@ private formatForDisplay(data: any): string {
     if (valuesStartIndex === -1) {
       throw new Error('La consulta no contiene una cláusula VALUES');
     }
-
+  
     const beforeValues = parametrizedQuery.substring(0, valuesStartIndex + 6); // +6 para incluir "VALUES"
     const afterValues = parametrizedQuery.substring(valuesStartIndex + 6);
-
+  
     // Procesar valores
     const processedValues = values.map(value => this.formatValueForSql(value));
-
+  
     // Construir la nueva consulta*/
     return parametrizedQuery//`${beforeValues} (${processedValues.join(', ')})${afterValues}`;
   }

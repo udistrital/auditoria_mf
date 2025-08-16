@@ -277,6 +277,7 @@ export class AuditoriaComponent implements OnInit {
         EVENTOBD: this.extraerDatosLog(element, 'sql_orm') || 'Sin evento de la BD',
         TIPOERROR: this.extraerDatosLog(element, 'tipo_log') || 'Sin tipo de error',
         MENSAJEERROR: element || 'Sin mensaje de error',
+        TIPOBUSQUEDA: this.typeSearch || 'standard'
       }
     });
   }
@@ -513,6 +514,14 @@ export class AuditoriaComponent implements OnInit {
       return jsonString; // Si no es JSON válido, devolver el string original
     }
   }
+  processData(messageError:string){
+    let safeLogString = (messageError).toString().replace(/`/g, "\\`");
+    const parsed = this.extractDataObject(JSON.stringify(safeLogString));
+    console.log(safeLogString)
+    console.log(parsed)
+    const highlighted = this.syntaxHighlight(parsed);
+    console.log(highlighted)
+  }
 
   extraerDatosLog(log: any, parametro: string): any {
     // Definimos los patrones de búsqueda para cada parámetro
@@ -559,30 +568,10 @@ export class AuditoriaComponent implements OnInit {
             api: this.extraerDatosLog(log, 'host'),
             metodo: this.extraerDatosLog(log, 'metodo'),
             usuario: this.extraerDatosLog(log, 'user'),
-            data:this.extraerDatosLog(log, 'data') ,
+            data:this.extractDataObject(log) ,
           }
           return data;
 
-        /*case 'data':
-          const matchData = log.match(patrones.data);
-          if (matchData && matchData[1]) {
-            try {
-              // Primero limpia el string
-              let dataStr = matchData[1].trim();
-
-              // Maneja casos donde el JSON está malformado
-              if (!dataStr.endsWith('}')) {
-                dataStr = dataStr.split('}')[0] + '}';
-              }
-
-              return this.parseNestedJson(this.cleanJsonString(dataStr));
-            } catch (e) {
-              console.error('Error procesando data:', e);
-              return null;
-            }
-          }
-          return null;
-*/
         case 'user':
           const matchUser = log.match(patrones.usuario);
           return matchUser && matchUser[1] ? matchUser[1].trim() : null;
@@ -855,6 +844,95 @@ export class AuditoriaComponent implements OnInit {
     } catch (e) {
       console.error(`Error al procesar el log: ${e}`);
       return null;
+    }
+  }
+
+  // Funciones que ayudan a modificar la petición realizada
+  
+  private extractDataObject(logString: string) {
+    try {
+      if (logString.trim().startsWith("data:")) {
+        const jsonString = logString.trim().substring(5).trim();
+        return JSON.parse(jsonString);
+      }
+      const dataIndex = logString.indexOf("data:");
+      if (dataIndex === -1) return null;
+
+      const dataSubstring = logString.substring(dataIndex + 5).trim();
+
+      const firstBrace = dataSubstring.indexOf("{");
+      if (firstBrace === -1) return null;
+
+      let openBraces = 0;
+      let endIndex = -1;
+
+      for (let i = firstBrace; i < dataSubstring.length; i++) {
+        if (dataSubstring[i] === "{") {
+          openBraces++;
+        } else if (dataSubstring[i] === "}") {
+          openBraces--;
+          if (openBraces === 0) {
+            endIndex = i + 1; // cortar aquí
+            break;
+          }
+        }
+      }
+
+      if (endIndex === -1) return null;
+
+      let jsonLike = dataSubstring.substring(firstBrace, endIndex);
+
+      // Limpiar comillas escapadas
+      jsonLike = jsonLike.replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\');
+      const dataObject = JSON.parse(jsonLike);
+      
+      this.deepFix(dataObject);
+      return dataObject;
+    } catch (error) {
+      console.error("Error al parsear el objeto data:", error);
+      return null;
+    }
+  }
+
+  private syntaxHighlight(json: any) {
+    if (typeof json != 'string') {
+      json = JSON.stringify(json, undefined, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match: any) {
+      let cls = 'number';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'key';
+        } else {
+          cls = 'string';
+        }
+      } else if (/true|false/.test(match)) {
+        cls = 'boolean';
+      } else if (/null/.test(match)) {
+        cls = 'null';
+      }
+      return '<span class="' + cls + '">' + match + '</span>';
+    });
+  }
+
+  private deepFix(obj:any) {
+    for (let key in obj) {
+      if (typeof obj[key] === "string") {
+        // Si parece JSON (empieza con { o [ )
+        if (obj[key].startsWith("{") || obj[key].startsWith("[")) {
+          try {
+            obj[key] = JSON.parse(obj[key]);
+            // Si el parseo fue exitoso, corregir recursivamente
+            this.deepFix(obj[key]);
+          } catch (e) {
+            // no era JSON válido, lo dejamos como string
+          }
+        }
+      } else if (typeof obj[key] === "object" && obj[key] !== null) {
+        this.deepFix(obj[key]);
+      }
     }
   }
 }

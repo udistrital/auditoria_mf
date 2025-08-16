@@ -162,5 +162,10 @@
   overflow-y: auto;
   margin: 10px 0;
   font-size: 0.9em;
-  line-height: 1.5;
+  line-height: 1.5;  
+  .string { color: #6ab825; }
+  .number { color: #ffb86c; }
+  .boolean { color: #56b6c2; }
+  .null { color: #f44747; }
+  .key { color: #d19a66; }
 }
