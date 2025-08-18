@@ -169,3 +169,17 @@
   .null { color: #f44747; }
   .key { color: #d19a66; }
 }
+.sql-display {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 8px 0;
+  color: #212529;
+  line-height: 1.5;
+  tab-size: 4;
+}

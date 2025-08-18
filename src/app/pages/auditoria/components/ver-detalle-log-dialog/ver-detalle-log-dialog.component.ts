@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { driver } from 'driver.js';
 import { tutorialDetalle } from '../../tutorial';
 
@@ -27,15 +27,10 @@ export class VerDetalleLogDialogComponent {
       fechaEjecucion: [this.data.FECHA || ''],
       rol: [this.data.ROL || '']
     });
-    let safeLogString = (this.data.MENSAJEERROR).toString().replace(/`/g, "\\`");
-    const parsed = this.extractDataObject(JSON.stringify(safeLogString));
-    console.log(safeLogString)
-    console.log(parsed)
-    const highlighted = this.syntaxHighlight(parsed);
-    console.log(highlighted)
+
     this.dataLogForm = this.fb.group({
       apiConsume: [this.data.APISCONSUMEN || ''],
-      peticionRealizada: [this.data.PETICIONREALIZADA || highlighted || ''],
+      peticionRealizada: [this.data.PETICIONREALIZADA || ''],
       eventoBD: [this.data.EVENTOBD || '']
     });
 
@@ -60,169 +55,90 @@ export class VerDetalleLogDialogComponent {
     driverObj.drive();
   }
 
-  private extractDataObject(logString: string) {
+  // Formatear la consulta SQL
+  buildDirectSqlQuery(textData: string): string {
+    if (!textData) return 'No hay datos SQL disponibles';
+
     try {
-      if (logString.trim().startsWith("data:")) {
-        const jsonString = logString.trim().substring(5).trim();
-        return JSON.parse(jsonString);
-      }
-      const dataIndex = logString.indexOf("data:");
-      if (dataIndex === -1) return null;
+      // Extraer la parte entre corchetes [SQL] - valores
+      const sqlStart = textData.indexOf('[');
+      const sqlEnd = textData.indexOf('] -');
 
-      const dataSubstring = logString.substring(dataIndex + 5).trim();
-
-      const firstBrace = dataSubstring.indexOf("{");
-      if (firstBrace === -1) return null;
-
-      let openBraces = 0;
-      let endIndex = -1;
-
-      for (let i = firstBrace; i < dataSubstring.length; i++) {
-        if (dataSubstring[i] === "{") {
-          openBraces++;
-        } else if (dataSubstring[i] === "}") {
-          openBraces--;
-          if (openBraces === 0) {
-            endIndex = i + 1; // cortar aquí
-            break;
-          }
-        }
+      if (sqlStart === -1 || sqlEnd === -1) {
+        return textData; // Retornar el texto original si no tiene el formato esperado
       }
 
-      if (endIndex === -1) return null;
+      // Obtener la consulta SQL parametrizada
+      let sqlQuery = textData.substring(sqlStart + 1, sqlEnd).trim();
 
-      let jsonLike = dataSubstring.substring(firstBrace, endIndex);
+      // Obtener los valores (eliminando las comillas invertidas y espacios)
+      const valuesPart = textData.substring(sqlEnd + 3).trim();
+      const values = valuesPart.split(',').map(v =>
+        v.trim().replace(/^`|`$/g, '')
+      );
 
-      // Limpiar comillas escapadas
-      jsonLike = jsonLike.replace(/\\"/g, '"')
-        .replace(/\\\\/g, '\\');
-      const dataObject = JSON.parse(jsonLike);
-      
-      this.deepFix(dataObject);
-      return dataObject;
+      // Reemplazar los parámetros en la consulta SQL
+      for (let i = 0; i < values.length; i++) {
+        const param = `$${i + 1}`;
+        const formattedValue = this.formatSqlValue(values[i]);
+        sqlQuery = sqlQuery.replace(param, formattedValue);
+      }
+
+      // Formatear bonito el SQL resultante
+      return this.formatSqlQuery(sqlQuery);
     } catch (error) {
-      console.error("Error al parsear el objeto data:", error);
-      return null;
+      console.error('Error al procesar la consulta SQL:', error);
+      return textData; // Si hay error, devolver el texto original
     }
   }
 
-  private syntaxHighlight(json: any) {
-    if (typeof json != 'string') {
-      json = JSON.stringify(json, undefined, 2);
-    }
-    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match: any) {
-      let cls = 'number';
-      if (/^"/.test(match)) {
-        if (/:$/.test(match)) {
-          cls = 'key';
-        } else {
-          cls = 'string';
-        }
-      } else if (/true|false/.test(match)) {
-        cls = 'boolean';
-      } else if (/null/.test(match)) {
-        cls = 'null';
-      }
-      return '<span class="' + cls + '">' + match + '</span>';
-    });
-  }
-
-  private deepFix(obj:any) {
-    for (let key in obj) {
-      if (typeof obj[key] === "string") {
-        // Si parece JSON (empieza con { o [ )
-        if (obj[key].startsWith("{") || obj[key].startsWith("[")) {
-          try {
-            obj[key] = JSON.parse(obj[key]);
-            // Si el parseo fue exitoso, corregir recursivamente
-            this.deepFix(obj[key]);
-          } catch (e) {
-            // no era JSON válido, lo dejamos como string
-          }
-        }
-      } else if (typeof obj[key] === "object" && obj[key] !== null) {
-        this.deepFix(obj[key]);
-      }
-    }
-  }
-
-  private formatJsonForDisplay(jsonString: string | object): string {
-    try {
-      // Si ya es un objeto, lo convertimos directamente
-      if (typeof jsonString === 'object') {
-        return JSON.stringify(jsonString, null, 2);
-      }
-
-      // Si es un string, intentamos parsearlo
-      let parsed = JSON.parse(jsonString);
-
-      // Procesamiento especial para el campo data
-      if (parsed.data && typeof parsed.data === 'string') {
-        try {
-          parsed.data = JSON.parse(parsed.data);
-        } catch (e) {
-          console.warn('No se pudo parsear el campo data:', e);
-        }
-      }
-
-      return JSON.stringify(parsed, null, 2);
-    } catch (e) {
-      console.warn('Error al formatear JSON:', e);
-      return typeof jsonString === 'string' ? jsonString : JSON.stringify(jsonString);
-    }
-  }
-  /**
-   * Formatea un valor para su inclusión segura en una consulta SQL
-   * @param value Valor a formatear
-   * @returns Valor formateado como string SQL
-   */
-  private formatValueForSql(value: any): string {
-    if (value === null || value === undefined) {
+  private formatSqlValue(value: string): string {
+    // Manejar valores NULL
+    if (value === 'null' || value === 'NULL') {
       return 'NULL';
     }
 
-    switch (typeof value) {
-      case 'string':
-        // Escapar comillas simples y envolver en comillas
-        return `'${value.replace(/'/g, "''")}'`;
-      case 'number':
-        return value.toString();
-      case 'boolean':
-        return value ? 'true' : 'false';
-      case 'object':
-        if (value instanceof Date) {
-          return `'${value.toISOString()}'::timestamp`;
-        }
-        // Intentar manejar otros objetos como JSON
-        return `'${JSON.stringify(value).replace(/'/g, "''")}'`;
-      default:
-        return `'${value}'`;
+    // Manejar booleanos
+    if (value === 'true' || value === 'false') {
+      return value;
     }
+
+    // Manejar números
+    if (!isNaN(Number(value))) {
+      return value;
+    }
+
+    // Manejar fechas (formato: 2025-08-01 19:08:40.602 +0000 UTC)
+    const dateRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?( \+0000 UTC)?$/;
+    if (dateRegex.test(value)) {
+      // Extraer solo la parte de fecha y hora (ignorar milisegundos y zona horaria)
+      const datePart = value.split(' ')[0];
+      const timePart = value.split(' ')[1].split('.')[0];
+      return `'${datePart} ${timePart}'::timestamp`;
+    }
+
+    // Para strings normales, escapar comillas simples
+    return `'${value.replace(/'/g, "''")}'`;
   }
 
-  buildDirectSqlQuery(textData: string): string {
-    console.log('textData', textData);
-    const sqlQueries = textData.trim().replace('[', '').split('] -');
-    const parametrizedQuery = sqlQueries[0]
-    const values = [sqlQueries[1]]
-    console.log('parametrizedQuery', parametrizedQuery);
-    console.log('------------------------------------');
-    console.log('values', values);
-    // Extraer la parte VALUES de la consulta
-    /*const valuesStartIndex = parametrizedQuery.indexOf('VALUES');
-    if (valuesStartIndex === -1) {
-      throw new Error('La consulta no contiene una cláusula VALUES');
-    }
-  
-    const beforeValues = parametrizedQuery.substring(0, valuesStartIndex + 6); // +6 para incluir "VALUES"
-    const afterValues = parametrizedQuery.substring(valuesStartIndex + 6);
-  
-    // Procesar valores
-    const processedValues = values.map(value => this.formatValueForSql(value));
-  
-    // Construir la nueva consulta*/
-    return parametrizedQuery//`${beforeValues} (${processedValues.join(', ')})${afterValues}`;
+  private formatSqlQuery(sql: string): string {
+    // Añadir saltos de línea después de palabras clave SQL
+    const keywords = ['SELECT', 'INSERT INTO', 'UPDATE', 'DELETE', 'FROM', 'WHERE', 'VALUES', 'RETURNING',];
+
+    let formattedSql = sql;
+
+    keywords.forEach(keyword => {
+      const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+      formattedSql = formattedSql.replace(regex, `\n${keyword}`);
+    });
+
+    // Añadir indentación
+    formattedSql = formattedSql
+      .split('\n')
+      .map((line, index) => index > 0 ? '  ' + line : line)
+      .join('\n');
+
+    return formattedSql.trim();
   }
 
 }

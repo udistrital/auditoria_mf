@@ -9,7 +9,7 @@ import { MAPEO_APIS } from 'src/app/shared/constantes';
 // @ts-ignore
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { from, throwError } from 'rxjs';
-import { catchError, tap, map, switchMap, finalize } from 'rxjs/operators';
+import { catchError, tap, map, switchMap } from 'rxjs/operators';
 import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
 import { driver } from 'driver.js';
 import { tutorialHome } from './tutorial';
@@ -72,6 +72,7 @@ export class AuditoriaComponent implements OnInit {
 
     window.dispatchEvent(new CustomEvent('clienteAuditoria', { detail: { appName: '@udistrital/auditoria-mf' } }));
   }
+
   private convertirFechaHoraAEpoch(fecha: string, hora: string): number {
     if (!fecha || !hora) return 0;
 
@@ -82,7 +83,6 @@ export class AuditoriaComponent implements OnInit {
     // Obtener timestamp en segundos (Unix Epoch)
     return Math.floor(fechaHora.getTime() / 1000);
   }
-
 
   buscarLogs(): void {
     this.dataSource.data = [];
@@ -354,6 +354,7 @@ export class AuditoriaComponent implements OnInit {
       return jsonString;
     }
   }
+
   private transformarRespuesta(response: any): LogData[] {
     if (!response || !response.Data || !Array.isArray(response.Data)) {
       return [];
@@ -365,13 +366,13 @@ export class AuditoriaComponent implements OnInit {
       ACCIONES: 'Ver',
       ROLES: log.rol || 'Rol no encontrado',
       NOMBRERESPONSABLE: log.nombre_responsable || 'Sin nombre',
-      DOCUMENTORESPONSABLE: log.documento_responsable	|| 'Sin documento',
-      DIRECCIONACCION: log.direccion_accion	 || 'Sin direccion',
-      APISCONSUMEN: log.apis_consumen	 || 'Sin apis',
-      PETICIONREALIZADA: this.funcionFormateoLog(log.peticion_realizada	|| 'Sin peticion'),
-      EVENTOBD: log.evento_bd	|| 'Sin evento de la BD',
+      DOCUMENTORESPONSABLE: log.documento_responsable || 'Sin documento',
+      DIRECCIONACCION: log.direccion_accion || 'Sin direccion',
+      APISCONSUMEN: log.apis_consumen || 'Sin apis',
+      PETICIONREALIZADA: this.funcionFormateoLog(log.peticion_realizada || 'Sin peticion'),
+      EVENTOBD: log.evento_bd || 'Sin evento de la BD',
       TIPOERROR: log.tipo_error || 'Sin tipo de error',
-      MENSAJEERROR: log.mensaje_error	 || 'Sin mensaje de error'
+      MENSAJEERROR: log.mensaje_error || 'Sin mensaje de error'
     }));
   }
 
@@ -514,7 +515,8 @@ export class AuditoriaComponent implements OnInit {
       return jsonString; // Si no es JSON válido, devolver el string original
     }
   }
-  processData(messageError:string){
+
+  processData(messageError: string) {
     let safeLogString = (messageError).toString().replace(/`/g, "\\`");
     const parsed = this.extractDataObject(JSON.stringify(safeLogString));
     console.log(safeLogString)
@@ -568,7 +570,7 @@ export class AuditoriaComponent implements OnInit {
             api: this.extraerDatosLog(log, 'host'),
             metodo: this.extraerDatosLog(log, 'metodo'),
             usuario: this.extraerDatosLog(log, 'user'),
-            data:this.extractDataObject(log) ,
+            data: this.extractDataObject(log),
           }
           return data;
 
@@ -697,158 +699,55 @@ export class AuditoriaComponent implements OnInit {
       return cleanStr;
     }
   }
+
   parseNestedJson(response: ApiResponse): ApiResponse {
-  if (typeof response.data === 'string') {
-    try {
-      // Parseamos el string JSON principal
-      const parsedData = JSON.parse(response.data);
-      
-      // Función recursiva para parsear strings anidados que puedan ser JSON
-      const deepParse = (obj: any): any => {
-        if (typeof obj === 'string') {
-          try {
-            // Intenta parsear si parece JSON
-            const trimmed = obj.trim();
-            if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
-                (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
-              return deepParse(JSON.parse(trimmed));
-            }
-            return obj;
-          } catch {
-            return obj;
-          }
-        } else if (Array.isArray(obj)) {
-          return obj.map(item => deepParse(item));
-        } else if (typeof obj === 'object' && obj !== null) {
-          const result: any = {};
-          for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-              result[key] = deepParse(obj[key]);
-            }
-          }
-          return result;
-        }
-        return obj;
-      };
+    if (typeof response.data === 'string') {
+      try {
+        // Parseamos el string JSON principal
+        const parsedData = JSON.parse(response.data);
 
-      // Aplicamos el parseo profundo
-      return {
-        ...response,
-        data: deepParse(parsedData)
-      };
-    } catch (error) {
-      console.error('Error parsing data:', error);
-      return response; // Devolvemos el original si hay error
-    }
-  }
-  return response; // Si ya es objeto, lo devolvemos tal cual
-}
-  private parseRecursiveJson(jsonString: string): any {
-    try {
-      // Intenta parsear directamente
-      const parsed = JSON.parse(jsonString);
-
-      // Si el resultado es un objeto, revisamos sus propiedades
-      if (typeof parsed === 'object' && parsed !== null) {
-        for (const key in parsed) {
-          if (typeof parsed[key] === 'string') {
+        // Función recursiva para parsear strings anidados que puedan ser JSON
+        const deepParse = (obj: any): any => {
+          if (typeof obj === 'string') {
             try {
-              // Si una propiedad es string, intentamos parsearla
-              parsed[key] = this.parseRecursiveJson(parsed[key]);
-            } catch (e) {
-              // Si falla, dejamos el string original
+              // Intenta parsear si parece JSON
+              const trimmed = obj.trim();
+              if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+                (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+                return deepParse(JSON.parse(trimmed));
+              }
+              return obj;
+            } catch {
+              return obj;
             }
+          } else if (Array.isArray(obj)) {
+            return obj.map(item => deepParse(item));
+          } else if (typeof obj === 'object' && obj !== null) {
+            const result: any = {};
+            for (const key in obj) {
+              if (obj.hasOwnProperty(key)) {
+                result[key] = deepParse(obj[key]);
+              }
+            }
+            return result;
           }
-        }
+          return obj;
+        };
+
+        // Aplicamos el parseo profundo
+        return {
+          ...response,
+          data: deepParse(parsedData)
+        };
+      } catch (error) {
+        console.error('Error parsing data:', error);
+        return response; // Devolvemos el original si hay error
       }
-
-      return parsed;
-    } catch (e) {
-      // Si no es JSON válido, devolvemos el string original
-      return jsonString;
     }
-  }
-  extraerDatosLog01(log: any, parametro: string) {
-    // Definimos los patrones de búsqueda para cada parámetro
-    const patrones: any = {
-      sql_orm: /sql_orm:\s\{(.*?)\},\s+ip_user:/,
-      host: /host: ([^,]*)/,
-      tipo_log: /\[([a-zA-Z0-9._-]+)(?=\.\w+:)/,
-      fecha: /\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}/,
-      usuario: /, user:\s([^\s,]+\s([a-zA-Z0-9._-]+))/,
-      endpoint: /end_point:\s([^\s,]+)/,
-      metodo: /method: ([^,]*)/,
-      ip_user: /ip_user: ([^,]*)/,
-      user_agent: /user_agent:\s([^\s,]+)/,
-      app_name: /app_name: ([^,]*)/,
-      fecha_iso: /date: ([^,]*)/,
-      router_pattern: /RouterPattern":"([^"]*)"/,
-      apiConsumen: /app_name:\s([^\s,]+)/,
-      api: /host:\s([^\s,]+)/,
-      direccionAccion: /ip_user:\s([^\s,]+)/,
-      data: /data:\s({.*})/,
-    };
-
-    try {
-      switch (parametro) {
-        case 'sql_orm':
-          const matchSql = log.match(patrones.sql_orm);
-          return matchSql ? matchSql[1].trim() : null;
-
-        case 'host':
-          const matchHost = log.match(patrones.host);
-          return matchHost ? matchHost[1].trim() : null;
-
-        case 'tipo_log':
-          const matchTipo = log.match(patrones.tipo_log);
-          return matchTipo[1];
-
-        case 'fecha':
-          const matchFecha = log.match(patrones.fecha);
-          return matchFecha ? matchFecha[0].trim() : null;
-
-        case 'peticion':
-          const data: any = {
-            end_point: this.extraerDatosLog(log, 'end_point') || '/',
-            api: this.extraerDatosLog(log, 'host'),
-            metodo: this.extraerDatosLog(log, 'metodo'),
-            usuario: this.extraerDatosLog(log, 'user'),
-            data: this.extraerDatosLog(log, 'data'),
-          }
-          return JSON.stringify(data, null, 2);
-
-        case 'user':
-          const matchUser = log.match(patrones.usuario);
-          return matchUser[1] ? matchUser[1].trim() : null;
-        case 'usuario':
-          const matchUsuario = log.match(patrones.usuario);
-          let usuario = matchUsuario && matchUsuario[1] ? matchUsuario[1].trim() : "";
-
-          const INVALIDOS = ["N/A", "Error", "Error WSO2", "", "null", undefined, null];
-
-          if (!INVALIDOS.includes(usuario)) {
-            usuario += "@udistrital.edu.co";
-          } else {
-            usuario = "Error WSO2 - Sin usuario";
-          }
-
-          return usuario;
-
-        default:
-          if (patrones[parametro]) {
-            const match = log.match(patrones[parametro]);
-            return match ? match[1].trim() : null;
-          }
-          return null;
-      }
-    } catch (e) {
-      console.error(`Error al procesar el log: ${e}`);
-      return null;
-    }
+    return response; // Si ya es objeto, lo devolvemos tal cual
   }
 
   // Funciones que ayudan a modificar la petición realizada
-  
   private extractDataObject(logString: string) {
     try {
       if (logString.trim().startsWith("data:")) {
@@ -886,7 +785,7 @@ export class AuditoriaComponent implements OnInit {
       jsonLike = jsonLike.replace(/\\"/g, '"')
         .replace(/\\\\/g, '\\');
       const dataObject = JSON.parse(jsonLike);
-      
+
       this.deepFix(dataObject);
       return dataObject;
     } catch (error) {
@@ -917,7 +816,7 @@ export class AuditoriaComponent implements OnInit {
     });
   }
 
-  private deepFix(obj:any) {
+  private deepFix(obj: any) {
     for (let key in obj) {
       if (typeof obj[key] === "string") {
         // Si parece JSON (empieza con { o [ )

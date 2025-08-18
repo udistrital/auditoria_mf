@@ -68,8 +68,8 @@
                                     <pre *ngIf="this.data.TIPOBUSQUEDA === 'flexible'" class="json-display" id="json-container " [innerHTML]="dataLogForm.get('peticionRealizada')?.value | json"></pre>
 
                                     <p class="nombre-input" id="driver-db-label">EVENTO EJECUTADO EN LA BASE DE DATOS:</p>
-                                    <textarea formControlName="eventoBD" class="textareaNivelDos"
-                                        id="driver-db-textarea"></textarea>
+                                    <textarea *ngIf="this.data.TIPOBUSQUEDA != 'flexible'" formControlName="eventoBD" class="textareaNivelDos" id="driver-db-textarea"></textarea>
+                                    <pre *ngIf="this.data.TIPOBUSQUEDA === 'flexible'" class="sql-display">{{ buildDirectSqlQuery(data.EVENTOBD) }}</pre>
                                 </div>
                             </form>
                         </mat-card-content>
