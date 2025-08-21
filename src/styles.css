@@ -181,9 +181,6 @@ input, select, textarea{
 
 .driver-popover.driverjs-theme .driver-popover-title {
   font-size: 20px;
-}
-
-.driver-popover.driverjs-theme .driver-popover-title {
   color: #731514 !important;
 }
 .driver-popover.driverjs-theme .driver-popover-description,
@@ -249,4 +246,9 @@ input, select, textarea{
 
 .driver-popover.driverjs-theme .driver-popover-arrow-side-bottom.driver-popover-arrow {
   border-bottom-color: #731514 !important;
+}
+
+/* Bootstrap */
+.form-select{
+  --bs-form-select-bg-img: none !important;
 }
