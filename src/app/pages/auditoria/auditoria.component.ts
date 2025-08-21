@@ -9,14 +9,20 @@ import { MAPEO_APIS } from 'src/app/shared/constantes';
 // @ts-ignore
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { from, throwError } from 'rxjs';
-import { catchError, tap, map, switchMap, finalize } from 'rxjs/operators';
+import { catchError, tap, map, switchMap } from 'rxjs/operators';
 import { AuditoriaMidService } from 'src/app/services/auditoria_mid.service';
 import { driver } from 'driver.js';
 import { tutorialHome } from './tutorial';
 import { InfoRootDetail, LogData } from 'src/app/helpers/interfaces/IAuditoria';
 import { environment } from 'src/environments/environment';
 import { fechaHastaMayorQueDesde } from 'src/app/helpers/validators/restriccion-fechas';
-
+interface ApiResponse {
+  end_point: string;
+  api: string;
+  metodo: string;
+  usuario: null | string;
+  data: string | object; // Puede ser string u objeto después de la transformación
+}
 @Component({
   selector: 'app-auditoria',
   templateUrl: './auditoria.component.html',
@@ -35,7 +41,7 @@ export class AuditoriaComponent implements OnInit {
   years: number[] = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
   logForm !: FormGroup;
   dataSource!: MatTableDataSource<LogData>;
-  typeSearch:string='';
+  typeSearch: string = '';
 
   constructor(public dialog: MatDialog, private fb: FormBuilder, private popUpManager: PopUpManager,
     private auditoriaMidService: AuditoriaMidService,) {
@@ -66,17 +72,17 @@ export class AuditoriaComponent implements OnInit {
 
     window.dispatchEvent(new CustomEvent('clienteAuditoria', { detail: { appName: '@udistrital/auditoria-mf' } }));
   }
+
   private convertirFechaHoraAEpoch(fecha: string, hora: string): number {
     if (!fecha || !hora) return 0;
-    
+
     // Combinar fecha y hora en formato ISO (YYYY-MM-DDTHH:MM:SS)
     const fechaHoraString = `${fecha}T${hora}:00`;
     const fechaHora = new Date(fechaHoraString);
-    
+
     // Obtener timestamp en segundos (Unix Epoch)
     return Math.floor(fechaHora.getTime() / 1000);
   }
-
 
   buscarLogs(): void {
     this.dataSource.data = [];
@@ -89,9 +95,9 @@ export class AuditoriaComponent implements OnInit {
     }
 
     const payload: { [key: string]: any } = {
-      fechaInicio: this.convertirFechaHoraAEpoch(formValues.fechaDesde, formValues.horaDesde),//formValues.fechaDesde,
+      fechaInicio: this.convertirFechaHoraAEpoch(formValues.fechaDesde, formValues.horaDesde),
       horaInicio: formValues.horaDesde,
-      fechaFin: this.convertirFechaHoraAEpoch(formValues.fechaHasta, formValues.horaHasta),//formValues.fechaHasta,
+      fechaFin: this.convertirFechaHoraAEpoch(formValues.fechaHasta, formValues.horaHasta),
       horaFin: formValues.horaHasta,
       tipo_log: formValues.tipo_log,
       codigoResponsable: formValues.codigoResponsable,
@@ -203,7 +209,7 @@ export class AuditoriaComponent implements OnInit {
             this.dataSource.paginator = this.paginator;
             if (response.Data.length > 0) {
               this.popUpManager.showSuccessAlert('Datos cargados con éxito');
-            }else {
+            } else {
               this.popUpManager.showErrorAlert('Error al buscar dependencias: Datos no disponibles');
             }
           } else {
@@ -230,7 +236,7 @@ export class AuditoriaComponent implements OnInit {
           this.dataSource.paginator = this.paginator;
           this.popUpManager.showSuccessAlert('Datos cargados con éxito');
           resolve();
-        }else {
+        } else {
 
           this.popUpManager.showErrorAlert('Error al buscar dependencias: Datos no disponibles');
           resolve();
@@ -240,14 +246,17 @@ export class AuditoriaComponent implements OnInit {
       }
     });
   }
+
   abrirDialogVerDetalleLog(element: any): void {
-      const dialogRef = this.dialog.open(VerDetalleLogDialogComponent, {
-        width: '85%',
-        height: 'auto',
-        maxHeight: '65vh',
-        data: element
-      });
-    }
+    console.log('Elemento seleccionado:', element);
+    const dialogRef = this.dialog.open(VerDetalleLogDialogComponent, {
+      width: '85%',
+      height: 'auto',
+      maxHeight: '65vh',
+      data: element
+    });
+    console.log(element)
+  }
 
   abrirDialogVerDetalleLogFiltrados(element: any): void {
     const dialogRef = this.dialog.open(VerDetalleLogDialogComponent, {
@@ -268,6 +277,7 @@ export class AuditoriaComponent implements OnInit {
         EVENTOBD: this.extraerDatosLog(element, 'sql_orm') || 'Sin evento de la BD',
         TIPOERROR: this.extraerDatosLog(element, 'tipo_log') || 'Sin tipo de error',
         MENSAJEERROR: element || 'Sin mensaje de error',
+        TIPOBUSQUEDA: this.typeSearch || 'standard'
       }
     });
   }
@@ -308,7 +318,7 @@ export class AuditoriaComponent implements OnInit {
         }
         return from(response.json());
       }),
-      tap(data => {}),
+      tap(data => { }),
       map(data => {
         if (data?.cliente?.api) {
           this.apisInfo = data.cliente.api.map((api: any) => {
@@ -344,26 +354,27 @@ export class AuditoriaComponent implements OnInit {
       return jsonString;
     }
   }
+
   private transformarRespuesta(response: any): LogData[] {
-      if (!response || !response.Data || !Array.isArray(response.Data)) {
-        return [];
-      }
-      return response.Data.map((log: any) => ({
-        MODIFICACION: log.tipo_log || 'Sin tipo',
-        FECHA: log.fecha || 'Sin fecha',
-        ROL: log.rolResponsable || 'Sin usuario',
-        ACCIONES: 'Ver',
-        ROLES: log.rol || 'Rol no encontrado',
-        NOMBRERESPONSABLE: log.nombreResponsable || 'Sin nombre',
-        DOCUMENTORESPONSABLE: log.documentoResponsable || 'Sin documento',
-        DIRECCIONACCION: log.direccionAccion || 'Sin direccion',
-        APISCONSUMEN: log.apisConsumen || 'Sin apis',
-        PETICIONREALIZADA: this.funcionFormateoLog(log.peticionRealizada || 'Sin peticion'),
-        EVENTOBD: log.eventoBD || 'Sin evento de la BD',
-        TIPOERROR: log.tipoError || 'Sin tipo de error',
-        MENSAJEERROR: log.mensajeError || 'Sin mensaje de error'
-      }));
+    if (!response || !response.Data || !Array.isArray(response.Data)) {
+      return [];
     }
+    return response.Data.map((log: any) => ({
+      MODIFICACION: log.tipo_log || 'Sin tipo',
+      FECHA: log.fecha || 'Sin fecha',
+      ROL: log.rol_responsable || 'Sin usuario',
+      ACCIONES: 'Ver',
+      ROLES: log.rol || 'Rol no encontrado',
+      NOMBRERESPONSABLE: log.nombre_responsable || 'Sin nombre',
+      DOCUMENTORESPONSABLE: log.documento_responsable || 'Sin documento',
+      DIRECCIONACCION: log.direccion_accion || 'Sin direccion',
+      APISCONSUMEN: log.apis_consumen || 'Sin apis',
+      PETICIONREALIZADA: this.funcionFormateoLog(log.peticion_realizada || 'Sin peticion'),
+      EVENTOBD: log.evento_bd || 'Sin evento de la BD',
+      TIPOERROR: log.tipo_error || 'Sin tipo de error',
+      MENSAJEERROR: log.mensaje_error || 'Sin mensaje de error'
+    }));
+  }
 
   startTour() {
     const driverObj = driver({
@@ -386,7 +397,7 @@ export class AuditoriaComponent implements OnInit {
     try {
       // Procesar cada registro para extraer los datos necesarios
       const exportData = this.dataSource.data.map(log => {
-        if(this.typeSearch==='flexible'){
+        if (this.typeSearch === 'flexible') {
           return {
             MODIFICACION: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo',
             FECHA: this.extraerDatosLog(log, 'fecha') || 'Sin fecha',
@@ -400,8 +411,8 @@ export class AuditoriaComponent implements OnInit {
             TIPOERROR: this.extraerDatosLog(log, 'tipo_log') || 'Sin tipo de error',
             MENSAJEERROR: JSON.stringify(log) || 'Sin mensaje de error'
           };
-        }else{
-          const clonedItem = {...log};
+        } else {
+          const clonedItem = { ...log };
           // Formatear los campos JSON para mejor legibilidad
           if (clonedItem.PETICIONREALIZADA) {
             try {
@@ -453,7 +464,7 @@ export class AuditoriaComponent implements OnInit {
     data.forEach((item: any) => {
       const row = columns.map(col => {
         const value = item[col] || '';
-        if (this.typeSearch==='flexible') {
+        if (this.typeSearch === 'flexible') {
           if (typeof value === 'string') {
             // Limpiar formato JSON si es necesario
             if (col === 'PETICIONREALIZADA' || col === 'EVENTOBD') {
@@ -465,10 +476,10 @@ export class AuditoriaComponent implements OnInit {
               }
             }
             return `"${value.replace(/"/g, '""')}"`;
-          }else{
+          } else {
             return `"${String(value)}"`;
           }
-        }else{
+        } else {
           // Escapar comillas y saltos de línea para formato CSV
           return `"${String(value).replace(/"/g, '""')}"`;
         }
@@ -505,14 +516,23 @@ export class AuditoriaComponent implements OnInit {
     }
   }
 
-  extraerDatosLog(log: any, parametro: string) {
+  processData(messageError: string) {
+    let safeLogString = (messageError).toString().replace(/`/g, "\\`");
+    const parsed = this.extractDataObject(JSON.stringify(safeLogString));
+    console.log(safeLogString)
+    console.log(parsed)
+    const highlighted = this.syntaxHighlight(parsed);
+    console.log(highlighted)
+  }
+
+  extraerDatosLog(log: any, parametro: string): any {
     // Definimos los patrones de búsqueda para cada parámetro
     const patrones: any = {
       sql_orm: /sql_orm:\s\{(.*?)\},\s+ip_user:/,
       host: /host: ([^,]*)/,
       tipo_log: /\[([a-zA-Z0-9._-]+)(?=\.\w+:)/,
       fecha: /\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}\.\d{3}/,
-      usuario: /, user:\s([^\s,]+\s([a-zA-Z0-9._-]+))/,
+      usuario: /, user:\s([^\s,]+\s([a-zA-Z0-9._-]+))/, // Modificado para hacerlo más flexible
       endpoint: /end_point:\s([^\s,]+)/,
       metodo: /method: ([^,]*)/,
       ip_user: /ip_user: ([^,]*)/,
@@ -538,7 +558,7 @@ export class AuditoriaComponent implements OnInit {
 
         case 'tipo_log':
           const matchTipo = log.match(patrones.tipo_log);
-          return matchTipo[1];
+          return matchTipo ? matchTipo[1] : null; // Agregada validación
 
         case 'fecha':
           const matchFecha = log.match(patrones.fecha);
@@ -550,16 +570,24 @@ export class AuditoriaComponent implements OnInit {
             api: this.extraerDatosLog(log, 'host'),
             metodo: this.extraerDatosLog(log, 'metodo'),
             usuario: this.extraerDatosLog(log, 'user'),
-            data: this.extraerDatosLog(log, 'data'),
+            data: this.extractDataObject(log),
           }
-          return JSON.stringify(data, null, 2);
+          return data;
 
         case 'user':
           const matchUser = log.match(patrones.usuario);
-          return matchUser[1] ? matchUser[1].trim() : null;
+          return matchUser && matchUser[1] ? matchUser[1].trim() : null;
+
         case 'usuario':
           const matchUsuario = log.match(patrones.usuario);
           let usuario = matchUsuario && matchUsuario[1] ? matchUsuario[1].trim() : "";
+
+          // Si no se encontró usuario con el patrón principal, intenta con un patrón alternativo
+          if (!usuario) {
+            const altPattern = /user: ([^,\s]+)/;
+            const altMatch = log.match(altPattern);
+            usuario = altMatch && altMatch[1] ? altMatch[1].trim() : "";
+          }
 
           const INVALIDOS = ["N/A", "Error", "Error WSO2", "", "null", undefined, null];
 
@@ -579,8 +607,231 @@ export class AuditoriaComponent implements OnInit {
           return null;
       }
     } catch (e) {
-      console.error(`Error al procesar el log: ${e}`);
+      console.error(`Error al procesar el log para ${parametro}:`, e);
       return null;
+    }
+  }
+
+  cleanJsonString(jsonString: string): any {
+    if (!jsonString || typeof jsonString !== 'string') {
+      return jsonString;
+    }
+
+    // Limpieza inicial del string
+    let cleanStr = jsonString.trim();
+
+    // Elimina caracteres no imprimibles excepto tabulaciones y saltos de línea que podrían estar en JSON válido
+    cleanStr = cleanStr.replace(/[\x00-\x09\x0B-\x0C\x0E-\x1F\x7F]/g, '');
+
+    // Intenta encontrar el JSON válido más interno
+    const extractValidJson = (str: string): string | null => {
+      let openBrackets = 0;
+      let startIndex = -1;
+
+      for (let i = 0; i < str.length; i++) {
+        if (str[i] === '{' || str[i] === '[') {
+          if (openBrackets === 0) {
+            startIndex = i;
+          }
+          openBrackets++;
+        } else if (str[i] === '}' || str[i] === ']') {
+          openBrackets--;
+          if (openBrackets === 0 && startIndex !== -1) {
+            // Verifica si lo que sigue es solo whitespace o nada
+            const remaining = str.slice(i + 1).trim();
+            if (remaining === '' || /^[,:]?\s*$/.test(remaining)) {
+              return str.slice(startIndex, i + 1);
+            }
+          }
+        }
+      }
+      return null;
+    };
+
+    const validJson = extractValidJson(cleanStr);
+    if (validJson) {
+      cleanStr = validJson;
+    } else {
+      // Si no encontramos JSON válido, intentamos el parseo directo como último recurso
+      try {
+        return JSON.parse(cleanStr);
+      } catch {
+        return cleanStr;
+      }
+    }
+
+    try {
+      let parsedData = JSON.parse(cleanStr);
+
+      // Función recursiva para limpiar y parsear strings anidados
+      const deepParse = (obj: any): any => {
+        if (typeof obj === 'string') {
+          // Verifica si el string podría ser un JSON
+          const trimmed = obj.trim();
+          if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+            try {
+              const nestedJson = extractValidJson(trimmed) || trimmed;
+              const parsed = JSON.parse(nestedJson);
+              return deepParse(parsed);
+            } catch {
+              return obj;
+            }
+          }
+          return obj;
+        } else if (Array.isArray(obj)) {
+          return obj.map(item => deepParse(item));
+        } else if (typeof obj === 'object' && obj !== null) {
+          const result: any = {};
+          for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              result[key] = deepParse(obj[key]);
+            }
+          }
+          return result;
+        }
+        return obj;
+      };
+
+      return deepParse(parsedData);
+    } catch (error) {
+      console.error('Error al parsear JSON:', error, 'String:', cleanStr);
+      return cleanStr;
+    }
+  }
+
+  parseNestedJson(response: ApiResponse): ApiResponse {
+    if (typeof response.data === 'string') {
+      try {
+        // Parseamos el string JSON principal
+        const parsedData = JSON.parse(response.data);
+
+        // Función recursiva para parsear strings anidados que puedan ser JSON
+        const deepParse = (obj: any): any => {
+          if (typeof obj === 'string') {
+            try {
+              // Intenta parsear si parece JSON
+              const trimmed = obj.trim();
+              if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+                (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+                return deepParse(JSON.parse(trimmed));
+              }
+              return obj;
+            } catch {
+              return obj;
+            }
+          } else if (Array.isArray(obj)) {
+            return obj.map(item => deepParse(item));
+          } else if (typeof obj === 'object' && obj !== null) {
+            const result: any = {};
+            for (const key in obj) {
+              if (obj.hasOwnProperty(key)) {
+                result[key] = deepParse(obj[key]);
+              }
+            }
+            return result;
+          }
+          return obj;
+        };
+
+        // Aplicamos el parseo profundo
+        return {
+          ...response,
+          data: deepParse(parsedData)
+        };
+      } catch (error) {
+        console.error('Error parsing data:', error);
+        return response; // Devolvemos el original si hay error
+      }
+    }
+    return response; // Si ya es objeto, lo devolvemos tal cual
+  }
+
+  // Funciones que ayudan a modificar la petición realizada
+  private extractDataObject(logString: string) {
+    try {
+      if (logString.trim().startsWith("data:")) {
+        const jsonString = logString.trim().substring(5).trim();
+        return JSON.parse(jsonString);
+      }
+      const dataIndex = logString.indexOf("data:");
+      if (dataIndex === -1) return null;
+
+      const dataSubstring = logString.substring(dataIndex + 5).trim();
+
+      const firstBrace = dataSubstring.indexOf("{");
+      if (firstBrace === -1) return null;
+
+      let openBraces = 0;
+      let endIndex = -1;
+
+      for (let i = firstBrace; i < dataSubstring.length; i++) {
+        if (dataSubstring[i] === "{") {
+          openBraces++;
+        } else if (dataSubstring[i] === "}") {
+          openBraces--;
+          if (openBraces === 0) {
+            endIndex = i + 1; // cortar aquí
+            break;
+          }
+        }
+      }
+
+      if (endIndex === -1) return null;
+
+      let jsonLike = dataSubstring.substring(firstBrace, endIndex);
+
+      // Limpiar comillas escapadas
+      jsonLike = jsonLike.replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\');
+      const dataObject = JSON.parse(jsonLike);
+
+      this.deepFix(dataObject);
+      return dataObject;
+    } catch (error) {
+      console.error("Error al parsear el objeto data:", error);
+      return null;
+    }
+  }
+
+  private syntaxHighlight(json: any) {
+    if (typeof json != 'string') {
+      json = JSON.stringify(json, undefined, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match: any) {
+      let cls = 'number';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'key';
+        } else {
+          cls = 'string';
+        }
+      } else if (/true|false/.test(match)) {
+        cls = 'boolean';
+      } else if (/null/.test(match)) {
+        cls = 'null';
+      }
+      return '<span class="' + cls + '">' + match + '</span>';
+    });
+  }
+
+  private deepFix(obj: any) {
+    for (let key in obj) {
+      if (typeof obj[key] === "string") {
+        // Si parece JSON (empieza con { o [ )
+        if (obj[key].startsWith("{") || obj[key].startsWith("[")) {
+          try {
+            obj[key] = JSON.parse(obj[key]);
+            // Si el parseo fue exitoso, corregir recursivamente
+            this.deepFix(obj[key]);
+          } catch (e) {
+            // no era JSON válido, lo dejamos como string
+          }
+        }
+      } else if (typeof obj[key] === "object" && obj[key] !== null) {
+        this.deepFix(obj[key]);
+      }
     }
   }
 }
