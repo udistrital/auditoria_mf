@@ -309,7 +309,7 @@ export class AuditoriaComponent implements OnInit {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     };
-    const url = `${baseUrl}apis_cliente?cliente=${true ? 'e36v1MPQk2jbz9KM4SmKhk8Cyw0a':encodeURIComponent(rootClienteId)}`;
+    const url = `${baseUrl}apis_cliente?cliente=${encodeURIComponent(rootClienteId)}`;
     from(fetch(url, { headers })).pipe(
       switchMap(response => {
         if (!response.ok) {
