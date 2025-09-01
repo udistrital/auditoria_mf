@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewEncapsulation } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { driver } from 'driver.js';
@@ -7,7 +7,8 @@ import { tutorialDetalle } from '../../tutorial';
 @Component({
   selector: 'app-ver-detalle-log-dialog',
   templateUrl: './ver-detalle-log-dialog.component.html',
-  styleUrls: ['./ver-detalle-log-dialog.component.css']
+  styleUrls: ['./ver-detalle-log-dialog.component.css'],
+  encapsulation: ViewEncapsulation.Emulated
 })
 export class VerDetalleLogDialogComponent {
   detallesLogForm !: FormGroup;
