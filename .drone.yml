@@ -122,7 +122,7 @@ steps:
     region: us-east-1
     source: dist/**/*
     target: /${DRONE_REPO_NAME}
-    strip_prefix: dist/
+    strip_prefix: /dist/
   when:
     branch:
     - master
