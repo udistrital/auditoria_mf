@@ -9,7 +9,7 @@
     color: #8C1A18;
     padding: 10px;
     text-align: center;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     flex: 1;
     display: flex;
     justify-content: center;
@@ -21,7 +21,7 @@
     color: rgb(255, 255, 255);              
     padding: 6px;                          
     text-align: center;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     flex: 1;
     display: flex;
     justify-content: center;
@@ -64,7 +64,7 @@
 
 .textarea {
     width: 100%; 
-    height: 70px; 
+    height: 200px; 
     font-size: 14px; 
     padding: 10px; 
     box-sizing: border-box; 
@@ -84,4 +84,102 @@
     border: 1px solid #000000; 
     resize: none; 
     overflow-y: auto; 
+}
+
+/* Estilos para el botón de iniciar tour en el detalle */
+#start-detail-tour-btn {
+  right: 20px;
+  z-index: 1000;
+  background-color: #731514;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  position: fixed;
+}
+
+#start-detail-tour-btn:hover {
+  background-color: #731514;
+  transform: scale(1.1);
+}
+
+/* Ajustes para los popovers en áreas pequeñas */
+.driver-popover {
+  max-width: 300px;
+}
+
+.driver-popover-title {
+  font-size: 1.1em;
+  color: #731514;
+}
+
+.driver-popover-description {
+  font-size: 0.9em;
+  color: #555;
+}
+
+/* Estilos para el botón de iniciar tour */
+.tour-button {
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background-color: #ba8181 ;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.tour-button:hover {
+  background-color: #731514;
+  color: white;
+  transform: scale(1.1);
+}
+
+.json-display {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: monospace;
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 10px 0;
+  font-size: 0.9em;
+  line-height: 1.5;  
+  .string { color: #6ab825; }
+  .number { color: #ffb86c; }
+  .boolean { color: #56b6c2; }
+  .null { color: #f44747; }
+  .key { color: #d19a66; }
+}
+.sql-display {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 8px 0;
+  color: #212529;
+  line-height: 1.5;
+  tab-size: 4;
 }

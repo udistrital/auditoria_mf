@@ -3,7 +3,7 @@
     align-items: baseline;
     box-sizing: border-box;
     width: 100%;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     font-weight: bold;
     font-size: 13px;
 }
@@ -15,8 +15,7 @@
 .boton-accion{
     background-color: green;
     color: white;
-    padding: 0.2rem 2rem;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
     border-radius: 5px;
     border: none;
@@ -25,9 +24,7 @@
     display: flex;
     justify-content: center; 
     align-items: center; 
-    margin-left: 10%;
-    margin-right: 10%;
-    width: auto;
+    width: 100%;
     padding: 5px;
 }
 
@@ -81,7 +78,7 @@
 }
 
 .tooltip {
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     width: max-content;
     background-color: #FFF2CC;
     border: 1px solid #D6B656;
@@ -105,6 +102,8 @@
     left: calc(100% + 5px);
     transform: translateY(-50%);
     transition: opacity 0.3s;
+    max-width: 300px;
+    height: auto;
 }
 
 .tooltip-bottom {
@@ -127,7 +126,7 @@ input[formControlName="nombre"] {
 
 .boton-ayuda {
     position: relative;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     width: 15px;
     height: 15px;
     border-radius: 50%;
@@ -139,6 +138,13 @@ input[formControlName="nombre"] {
     border: 2px solid #858585;
     line-height: 5px;
     margin-left: 5px;
+}
+.boton-ayuda div{
+    width: 17px;
+    height: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 
@@ -155,7 +161,7 @@ input, select, textarea{
     width: 100%;
     border-radius: 5px;
     border: 1px solid;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     font-size: 14px;
     padding: 3px;
     box-sizing: border-box;
@@ -168,4 +174,81 @@ input, select, textarea{
     padding: 2rem;
     border-radius: 10px;
     margin-bottom: 1rem;
+}
+
+
+/* Driver JS */
+
+.driver-popover.driverjs-theme .driver-popover-title {
+  font-size: 20px;
+  color: #731514 !important;
+}
+.driver-popover.driverjs-theme .driver-popover-description,
+.driver-popover.driverjs-theme .driver-popover-progress-text{
+  color: #000;
+}
+.driver-popover.driverjs-theme .driver-popover-progress-text{
+    margin-right: 1rem;
+}
+
+.driver-popover.driverjs-theme button {
+  &.driver-popover-prev-btn,&.driver-popover-next-btn{
+    background-color: #731514 !important;
+    border: 2px solid #731514 !important;
+  }
+  &.driver-popover-close-btn{
+    color: #731514 !important;
+    font-size: 1.3rem;
+    &:hover{
+      background-color: #ffffff !important;
+    }
+  }
+  flex: 1;
+  text-align: center;
+  color: #ffffff;
+  text-shadow: none;
+  font-size: 14px;
+  padding: 5px 8px;
+  border-radius: 6px;
+}
+
+.driver-popover.driverjs-theme button:hover {
+  background-color: #3a0b0a !important;
+  color: #ffffff;
+}
+.driver-popover.driverjs-theme .driver-popover-navigation-btns {
+  justify-content: space-between;
+  gap: 3px;
+}
+
+.driver-popover.driverjs-theme .driver-popover-close-btn {
+  color: #ffffff;
+  background-color: #00000000;
+  border: none;
+}
+
+.driver-popover.driverjs-theme .driver-popover-close-btn:hover {
+  color: #ffffff;
+  background-color: #00000000;
+}
+
+.driver-popover.driverjs-theme .driver-popover-arrow-side-left.driver-popover-arrow {
+  border-left-color: #731514 !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-arrow-side-right.driver-popover-arrow {
+  border-right-color: #731514 !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-arrow-side-top.driver-popover-arrow {
+  border-top-color: #731514 !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-bottom-color: #731514 !important;
+}
+
+/* Bootstrap */
+.form-select{
+  --bs-form-select-bg-img: none !important;
 }
