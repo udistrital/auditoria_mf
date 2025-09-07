@@ -149,10 +149,20 @@ export class AuditoriaComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error en la petición:', error);
-          if (error.status === 404) {
-            this.popUpManager.showErrorAlert('No se encontraron datos en el rango de fechas y horas especificado, asociados con el tipo de LOG.');
+          if (error.error?.Code === 404 || error.error?.Code === "404") {
+            this.popUpManager.showErrorAlert('No se encontraron registros en el rango de fechas y horas especificado.');
+          }
+          else if (error.error?.Error?.includes("No se encontró el grupo de logs")) {
+            this.popUpManager.showErrorAlert(
+              "No se encontró el grupo de logs solicitado." +
+              "Verifica que el <strong>Nombre API</strong> exista y el rango de fechas sean correctos.<br><br>" +
+              "Si el problema persiste, contacta al administrador."
+            );
           } else {
-            this.popUpManager.showErrorAlert('Se generó un error al buscar los datos.');
+            this.popUpManager.showErrorAlert(
+              "Ocurrió un error inesperado al consultar los logs.<br>" +
+              "Intenta nuevamente o contacta con el administrador."
+            );
           }
           return [];
         }
@@ -520,10 +530,7 @@ export class AuditoriaComponent implements OnInit {
   processData(messageError: string) {
     let safeLogString = (messageError).toString().replace(/`/g, "\\`");
     const parsed = this.extractDataObject(JSON.stringify(safeLogString));
-    console.log(safeLogString)
-    console.log(parsed)
     const highlighted = this.syntaxHighlight(parsed);
-    console.log(highlighted)
   }
 
   extraerDatosLog(log: any, parametro: string): any {

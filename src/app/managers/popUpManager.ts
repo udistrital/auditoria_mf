@@ -23,7 +23,7 @@ export class PopUpManager {
             confirmButtonColor: '#8C1A18',
             icon: 'error',
             title: 'Error',
-            text: text,
+            html: text,
             confirmButtonText: 'Aceptar',
         });
     }
