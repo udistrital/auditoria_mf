@@ -11,56 +11,57 @@
           <mat-divider class="divider"></mat-divider>
           <mat-card-content>
             <form [formGroup]="logForm">
-              <div class="row">
-                <div class="col-12 col-md-4">
-                  <div class="contenedor-horizontal-campos">
-                    <div class="campo descripcion-campo" id="driver-fecha-label">
-                      <p class="nombre-input">Fecha
-                        <button class="boton-ayuda">
-                          <div>?</div>
-                          <span class="tooltip tooltip-right">
-                            <p>El rango de fechas para filtrar</p>
-                          </span>
-                        </button>
-                      </p>
-                      <div class="fecha-rango" id="driver-fecha-desde">
-                        <div class="fecha-contenedor" id="driver-fecha-desde-input">
-                          <mat-label class="fecha-label">Desde</mat-label>
+              <div class="grid-container">
+                <div class="grid-row">
+                  <div class="grid-col-12 grid-col-md-4">
+                    <div class="contenedor-horizontal-campos">
+                      <div class="campo descripcion-campo" id="driver-fecha-label">
+                        <p class="nombre-input">Fecha
                           <button class="boton-ayuda">
                             <div>?</div>
                             <span class="tooltip tooltip-right">
-                              <p>Selecciona la fecha y hora desde la cual deseas iniciar la búsqueda de logs.
-                                Asegúrate de que esté dentro del rango disponible del sistema</p>
+                              <p>El rango de fechas para filtrar</p>
                             </span>
                           </button>
-                          <div class="row align-items-center">
-                            <div class="col-7">
-                              <input type="date" formControlName="fechaDesde" class="form-control m-0">
-                            </div>
-                            <div class="col-5">
-                              <input type="time" id="horaDesde" formControlName="horaDesde" class="form-control m-0" />
+                        </p>
+                        <div class="fecha-rango" id="driver-fecha-desde">
+                          <div class="fecha-contenedor" id="driver-fecha-desde-input">
+                            <mat-label class="fecha-label">Desde</mat-label>
+                            <button class="boton-ayuda">
+                              <div>?</div>
+                              <span class="tooltip tooltip-right">
+                                <p>Selecciona la fecha y hora desde la cual deseas iniciar la búsqueda de logs.
+                                  Asegúrate de que esté dentro del rango disponible del sistema</p>
+                              </span>
+                            </button>
+                            <div class="grid-row align-center">
+                              <div class="grid-col-7">
+                                <input type="date" formControlName="fechaDesde" class="form-input">
+                              </div>
+                              <div class="grid-col-5">
+                                <input type="time" id="horaDesde" formControlName="horaDesde" class="form-input" />
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <div class="fecha-rango mt-4" id="driver-fecha-hasta">
-                        <div class="fecha-contenedor" id="driver-fecha-hasta-input">
-                          <mat-label class="fecha-label">Hasta</mat-label>
-                          <button class="boton-ayuda">
-                            <div>?</div>
-                            <span class="tooltip tooltip-right">
-                              <p>Elige la fecha y hora hasta la cual deseas buscar los registros. Esta fecha debe ser
-                                posterior a la fecha de inicio.</p>
-                            </span>
-                          </button>
-                          <div class="row align-items-center">
-                            <div class="col-7">
-                              <input type="date" formControlName="fechaHasta" class="form-control m-0">
-                            </div>
-                            <div class="col-5">
-                              <div class="time-input-container">
-                                <input type="time" id="horaHasta" formControlName="horaHasta"
-                                  class="form-control m-0" />
+                        <div class="fecha-rango mt-4" id="driver-fecha-hasta">
+                          <div class="fecha-contenedor" id="driver-fecha-hasta-input">
+                            <mat-label class="fecha-label">Hasta</mat-label>
+                            <button class="boton-ayuda">
+                              <div>?</div>
+                              <span class="tooltip tooltip-right">
+                                <p>Elige la fecha y hora hasta la cual deseas buscar los registros. Esta fecha debe ser
+                                  posterior a la fecha de inicio.</p>
+                              </span>
+                            </button>
+                            <div class="grid-row align-center">
+                              <div class="grid-col-7">
+                                <input type="date" formControlName="fechaHasta" class="form-input">
+                              </div>
+                              <div class="grid-col-5">
+                                <div class="time-input-container">
+                                  <input type="time" id="horaHasta" formControlName="horaHasta" class="form-input" />
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -68,102 +69,102 @@
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="col-12 col-md-4">
-                  <div class="campo descripcion-campo">
-                    <div id="driver-tipo-log-label">
-                      <p class="nombre-input">Tipo de origen
-                        <button class="boton-ayuda">
-                          <div>?</div>
-                          <span class="tooltip tooltip-right">
-                            <p>Filtra los logs por el tipo de operación HTTP realizada, como GET, POST, PUT o DELETE.
-                              Esto te permite analizar solicitudes específicas.</p>
-                          </span>
-                        </button>
-                      </p>
-                      <select formControlName="tipo_log" id="tipo_log" id="driver-tipo-log-select" class="form-select">
-                        <option value="" disabled selected>Seleccione un método HTTP</option>
-                        <option *ngFor="let tiposLog of tiposLogs" [value]="tiposLog">{{ tiposLog }}</option>
-                      </select>
-                    </div>
-                    <div id="driver-api-label">
-                      <div class="d-flex align-items-center">
-                        <p class="nombre-input">Nombre API
+                  <div class="grid-col-12 grid-col-md-4">
+                    <div class="campo descripcion-campo">
+                      <div id="driver-tipo-log-label">
+                        <p class="nombre-input">Tipo de origen
                           <button class="boton-ayuda">
                             <div>?</div>
                             <span class="tooltip tooltip-right">
-                              <p>Selecciona el nombre del servicio o API sobre el que se realizó la operación. </p>
+                              <p>Filtra los logs por el tipo de operación HTTP realizada, como GET, POST, PUT o DELETE.
+                                Esto te permite analizar solicitudes específicas.</p>
                             </span>
                           </button>
                         </p>
+                        <select formControlName="tipo_log" id="tipo_log" id="driver-tipo-log-select" class="form-select">
+                          <option value="" disabled selected>Seleccione un método HTTP</option>
+                          <option *ngFor="let tiposLog of tiposLogs" [value]="tiposLog">{{ tiposLog }}</option>
+                        </select>
                       </div>
-                      <select formControlName="nombreApi" id="nombreApi" id="driver-api-select" class="form-select"
-                        (change)="onNombreApiChange($event)">
-                        <option value="" disabled selected>Seleccione una API</option>
-                        <option *ngFor="let api of apisInfo; let i = index" [value]="i">
-                          {{ api.nombre }}
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-12 col-md-4 row">
-                  <div class="col-12">
-                    <p class="nombre-input" id="driver-codigo-label">Codigo responsable
-                      <button class="boton-ayuda">
-                        <div>?</div>
-                        <span class="tooltip tooltip-right">
-                          <p>Ingresa el código del usuario o sistema responsable de la operación
-                            registrada.<br />Usuario
-                            sin el arroba, que aparece en el log, campo opcional</p>
-                        </span>
-                      </button>
-                    </p>
-                    <input type="text" formControlName="codigoResponsable" class="form-control"
-                      id="driver-codigo-input">
-                  </div>
-                  <div class="col-12">
-                    <p class="nombre-input" id="driver-palabra-clave-input">Palabra clave
-                      <button class="boton-ayuda">
-                        <div>?</div>
-                        <span class="tooltip tooltip-right">
-                          <p>Opcionalmente, puedes filtrar una palabra clave para la búsqueda del log.</p>
-                        </span>
-                      </button>
-                    </p>
-                    <input type="text" formControlName="palabraClave" class="form-control" id="driver-codigo-input">
-                  </div>
-                </div>
-                <div class="col-12">
-                  <div class="row justify-content-between align-items-center mt-3">
-                    <div class="col-3 col-md-3">
-                      <div class="col-12" style="display: flex;justify-content: space-between;">
-                        <button class="boton-accion" id="driver-buscar-btn" (click)="typeSearch='standard';buscarLogs()"
-                          data-bs-toggle="tooltip" data-bs-placement="top"
-                          title="Procesamiento de los datos realizada desde el servidor"
-                          [disabled]="!logForm.valid">Búsqueda Estándar</button>
+                      <div id="driver-api-label">
+                        <div class="flex align-center">
+                          <p class="nombre-input">Nombre API
+                            <button class="boton-ayuda">
+                              <div>?</div>
+                              <span class="tooltip tooltip-right">
+                                <p>Selecciona el nombre del servicio o API sobre el que se realizó la operación. </p>
+                              </span>
+                            </button>
+                          </p>
+                        </div>
+                        <select formControlName="nombreApi" id="nombreApi" id="driver-api-select" class="form-select"
+                          (change)="onNombreApiChange($event)">
+                          <option value="" disabled selected>Seleccione una API</option>
+                          <option *ngFor="let api of apisInfo; let i = index" [value]="i">
+                            {{ api.nombre }}
+                          </option>
+                        </select>
                       </div>
                     </div>
-                    <div class="col-3 col-md-3">
-                      <div class="col-12" style="display: flex;justify-content: space-between;">
-                        <button class="boton-accion" id="driver-buscar-btn-flexible" (click)="typeSearch='flexible'; buscarLogsFiltrados()"
-                          data-bs-toggle="tooltip" data-bs-placement="top"
-                          title="Procesamiento de los datos realizada desde el aplicativo web"
-                          [disabled]="!logForm.valid">Búsqueda Flexible</button>
-                      </div>
+                  </div>
+                  <div class="grid-col-12 grid-col-md-4 grid-row">
+                    <div class="grid-col-12">
+                      <p class="nombre-input" id="driver-codigo-label">Codigo responsable
+                        <button class="boton-ayuda">
+                          <div>?</div>
+                          <span class="tooltip tooltip-right">
+                            <p>Ingresa el código del usuario o sistema responsable de la operación
+                              registrada.<br />Usuario
+                              sin el arroba, que aparece en el log, campo opcional</p>
+                          </span>
+                        </button>
+                      </p>
+                      <input type="text" formControlName="codigoResponsable" class="form-input"
+                        id="driver-codigo-input">
                     </div>
-                    <div class="col-6 col-md-3">
-                      <button id="export-btn" (click)="exportToCSV()" *ngIf="dataSource && dataSource.data.length > 0"
-                        class="export-button" mat-raised-button color="primary">
-                        <mat-icon>download</mat-icon> Exportar a CSV
-                      </button>
+                    <div class="grid-col-12">
+                      <p class="nombre-input" id="driver-palabra-clave-input">Palabra clave
+                        <button class="boton-ayuda">
+                          <div>?</div>
+                          <span class="tooltip tooltip-right">
+                            <p>Opcionalmente, puedes filtrar una palabra clave para la búsqueda del log.</p>
+                          </span>
+                        </button>
+                      </p>
+                      <input type="text" formControlName="palabraClave" class="form-input" id="driver-codigo-input">
+                    </div>
+                  </div>
+                  <div class="grid-col-12">
+                    <div class="grid-row justify-between align-center mt-3">
+                      <div class="grid-col-3 grid-col-md-3">
+                        <div class="grid-col-12 button-container">
+                          <button class="boton-accion" id="driver-buscar-btn" (click)="typeSearch='standard';buscarLogs()"
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Procesamiento de los datos realizada desde el servidor"
+                            [disabled]="!logForm.valid">Búsqueda Estándar</button>
+                        </div>
+                      </div>
+                      <div class="grid-col-3 grid-col-md-3">
+                        <div class="grid-col-12 button-container">
+                          <button class="boton-accion" id="driver-buscar-btn-flexible" (click)="typeSearch='flexible'; buscarLogsFiltrados()"
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Procesamiento de los datos realizada desde el aplicativo web"
+                            [disabled]="!logForm.valid">Búsqueda Flexible</button>
+                        </div>
+                      </div>
+                      <div class="grid-col-6 grid-col-md-3">
+                        <button id="export-btn" (click)="exportToCSV()" *ngIf="dataSource && dataSource.data.length > 0"
+                          class="export-button" mat-raised-button color="primary">
+                          <mat-icon>download</mat-icon> Exportar a CSV
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </form>
             <!-- Mensaje de error -->
-            <div *ngIf="logForm.hasError('fechaHastaInvalida')" class="alert alert-danger mt-2" role="alert">
+            <div *ngIf="logForm.hasError('fechaHastaInvalida')" class="alert-error mt-2" role="alert">
               La fecha/hora "Hasta" debe ser mayor que la fecha "Desde".
             </div>
             <br>
